@@ -9,5 +9,10 @@ namespace ReadForBlind
 {
     class Reader
     {
+        private SpeechSynthesizer reader;
+
+        public Reader() {
+            reader = new SpeechSynthesizer();
+        }
     }
 }
