@@ -15,6 +15,7 @@ namespace ReadForBlind
         public Listener() {
             listener = new SpeechRecognizer();
             this.configure();
+            this.loadGrammar();
         }
 
         private void configure() {
