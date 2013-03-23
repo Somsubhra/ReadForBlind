@@ -16,6 +16,11 @@ namespace ReadForBlind
             listener = new SpeechRecognizer();
         }
 
-        
+        private void configure() {
+            englishRecognizer = InstalledSpeechRecognizers.All.FirstOrDefault(d => d.Language.ToUpper() == "EN-US");
+            listener.SetRecognizer(englishRecognizer);
+        }
+
+
     }
 }
