@@ -14,6 +14,7 @@ namespace ReadForBlind
 
         public Listener() {
             listener = new SpeechRecognizer();
+            this.configure();
         }
 
         private void configure() {
