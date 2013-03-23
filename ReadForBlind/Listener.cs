@@ -10,9 +10,12 @@ namespace ReadForBlind
     class Listener
     {
         private SpeechRecognizer listener;
+        private SpeechRecognizerInformation englishRecognizer;
 
         public Listener() {
             listener = new SpeechRecognizer();
         }
+
+        
     }
 }
