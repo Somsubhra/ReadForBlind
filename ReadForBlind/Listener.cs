@@ -22,6 +22,8 @@ namespace ReadForBlind
             listener.SetRecognizer(englishRecognizer);
         }
 
-
+        private void loadGrammar() {
+            listener.Grammars.AddGrammarFromUri("Grammar-EN", new Uri("ms-appx:///grammar.xml", UriKind.Absolute));
+        }
     }
 }
