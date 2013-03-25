@@ -49,11 +49,13 @@ namespace ReadForBlind.Views
         
         }
 
-        private void captureCompleted(object sender, CameraOperationCompletedEventArgs e) { 
-        
+        private void captureCompleted(object sender, CameraOperationCompletedEventArgs e) {
+            Dispatcher.BeginInvoke(delegate() {
+                txtmsg.Text = "Image captured";
+            });
         }
 
-        private void captureImageAvailable(object sender, ContentReadyEventArgs e) { 
+        private void captureImageAvailable(object sender, ContentReadyEventArgs e) {
         
         }
             
