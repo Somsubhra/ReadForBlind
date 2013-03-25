@@ -15,7 +15,16 @@
 
     <!--LayoutRoot is the root grid where all page content is placed-->
     <Grid x:Name="LayoutRoot" Background="Transparent">
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Canvas x:Name="cameraCanvas" HorizontalAlignment="Stretch" Tap="cameraCanvasTapped">
+            <Canvas.Background>
+                <VideoBrush x:Name="viewfinderBrush" />
+            </Canvas.Background>
+            <TextBlock x:Name="txtmsg" Canvas.Left="56" TextWrapping="Wrap" Text="TextBlock" Canvas.Top="443"/>
+        </Canvas>
     </Grid>
 
 </phone:PhoneApplicationPage>
