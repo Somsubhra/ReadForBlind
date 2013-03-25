@@ -25,7 +25,7 @@ namespace ReadForBlind.Views
 
             //CONNECT: remove the below comment to make it work with the camera class & comment the line below it
             //bmp_raw = (BitmapImage)PhoneApplicationService.Current.State["image"];
-            bmp_raw = new BitmapImage(new Uri("/images/c2.png", UriKind.Relative));
+            bmp_raw = new BitmapImage(new Uri("/images/m20.jpg", UriKind.Relative));
             bmp_raw.CreateOptions = BitmapCreateOptions.None;       // makes the image creating instantaneous
 
             // set the image that we got from camera to the bg of loadingpage
@@ -35,6 +35,8 @@ namespace ReadForBlind.Views
 
         private void StartOcr() 
         {
+            Utils.deskew(ref bmp);
+
             if (bmp.PixelHeight > 640 || bmp.PixelWidth > 640)
                 Utils.resizeImage(ref bmp);
 
