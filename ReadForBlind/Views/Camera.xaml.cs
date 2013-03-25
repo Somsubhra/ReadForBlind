@@ -28,6 +28,35 @@ namespace ReadForBlind.Views
             mediaLibrary = new MediaLibrary();
         }
 
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            if ((PhotoCamera.IsCameraTypeSupported(CameraType.Primary) == true))
+            {
+                camera = new PhotoCamera(CameraType.Primary);
+                camera.Initialized += new EventHandler<CameraOperationCompletedEventArgs>(cameraInitialized);
+                camera.CaptureCompleted += new EventHandler<CameraOperationCompletedEventArgs>(captureCompleted);
+                camera.CaptureImageAvailable += new EventHandler<ContentReadyEventArgs>(captureImageAvailable);
+                viewfinderBrush.SetSource(camera);
+            }
+
+            else { 
+                
+            }
+        }
+
+        private void cameraInitialized(object sender, CameraOperationCompletedEventArgs e) { 
+        
+        }
+
+        private void captureCompleted(object sender, CameraOperationCompletedEventArgs e) { 
+        
+        }
+
+        private void captureImageAvailable(object sender, ContentReadyEventArgs e) { 
+        
+        }
+            
         private void cameraCanvasTapped(object sender, System.Windows.Input.GestureEventArgs e) {
             if (camera != null) {
                 try
@@ -42,5 +71,7 @@ namespace ReadForBlind.Views
                 }
             }
         }
+
+
     }
 }
