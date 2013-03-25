@@ -7,6 +7,10 @@ using System.Windows.Controls;
 using System.Windows.Navigation;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
+using Microsoft.Devices;
+using Microsoft.Xna.Framework.Media;
+using System.Windows.Media.Imaging;
+using System.Threading;
 
 namespace ReadForBlind.Views
 {
