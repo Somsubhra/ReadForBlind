@@ -34,6 +34,7 @@ namespace ReadForBlind.Views
             if ((PhotoCamera.IsCameraTypeSupported(CameraType.Primary) == true))
             {
                 camera = new PhotoCamera(CameraType.Primary);
+                this.startFlash();
                 camera.Initialized += new EventHandler<CameraOperationCompletedEventArgs>(cameraInitialized);
                 camera.CaptureCompleted += new EventHandler<CameraOperationCompletedEventArgs>(captureCompleted);
                 camera.CaptureImageAvailable += new EventHandler<ContentReadyEventArgs>(captureImageAvailable);
