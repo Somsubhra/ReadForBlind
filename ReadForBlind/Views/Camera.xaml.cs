@@ -100,10 +100,7 @@ namespace ReadForBlind.Views
         private void stopFlash() {
             if (camera.IsFlashModeSupported(FlashMode.Off))
             {
-                if (camera.FlashMode == FlashMode.On)
-                {
-                    camera.FlashMode = FlashMode.Off;
-                }
+                    camera.FlashMode = FlashMode.Off;  
             }
         }
     }
