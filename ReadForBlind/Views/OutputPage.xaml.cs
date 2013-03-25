@@ -7,21 +7,17 @@ using System.Windows.Controls;
 using System.Windows.Navigation;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
-using Windows.Phone.Speech.Synthesis;
-using Windows.Phone.Speech;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
+
 
 namespace ReadForBlind.Views
 {
     public partial class OutputPage : PhoneApplicationPage
     {
         private String readText;
-        private SpeechSynthesizer synthesizer;
-        volatile bool play = false;
-        volatile bool playing = false;
-        private int count = 0;
-        private List<String> text;
+        int count = 0;
+        List<String> text;
         CancellationTokenSource cts = null;
         Reader read;
 
@@ -33,12 +29,12 @@ namespace ReadForBlind.Views
             readText = String.Join(" ", text);
             txt.Text = readText;
             read = new Reader();
-            startConv();
+            //startConv();
         }
 
-        private void startConv() 
+        private async void startConv() 
         {
-            read.readText("May I reed the text for you? Tap the screen for yes");
+            await read.readText("May I reed the text for you? Tap the screen for yes");
         }
 
         // this method should listen for the user input: play, pause, restart, etc..
@@ -52,12 +48,13 @@ namespace ReadForBlind.Views
         // if it's paused, play it.
         private async void ScreenTap(object sender, System.Windows.Input.GestureEventArgs e)
         {
-               
+             
         }
 
-        private async Task ReadText(CancellationToken token) 
+
+        private async Task ReadText(CancellationToken token)
         {
-            
+           
         }
 
         protected override void OnBackKeyPress(System.ComponentModel.CancelEventArgs e)

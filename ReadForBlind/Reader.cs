@@ -15,7 +15,7 @@ namespace ReadForBlind
             reader = new SpeechSynthesizer();
         }
 
-        public async void readText(string text) {
+        public async Task readText(string text) {
             await reader.SpeakTextAsync(text);
         }
 
