@@ -34,7 +34,7 @@ namespace ReadForBlind.Views
             if ((PhotoCamera.IsCameraTypeSupported(CameraType.Primary) == true))
             {
                 camera = new PhotoCamera(CameraType.Primary);
-                this.startFlash();
+                this.setAutoFlash();
                 camera.Initialized += new EventHandler<CameraOperationCompletedEventArgs>(cameraInitialized);
                 camera.CaptureCompleted += new EventHandler<CameraOperationCompletedEventArgs>(captureCompleted);
                 camera.CaptureImageAvailable += new EventHandler<ContentReadyEventArgs>(captureImageAvailable);
@@ -102,6 +102,12 @@ namespace ReadForBlind.Views
             if (camera.IsFlashModeSupported(FlashMode.Off))
             {
                     camera.FlashMode = FlashMode.Off;  
+            }
+        }
+
+        private void setAutoFlash() {
+            if (camera.IsFlashModeSupported(FlashMode.Auto)) {
+                camera.FlashMode = FlashMode.Auto;
             }
         }
     }
