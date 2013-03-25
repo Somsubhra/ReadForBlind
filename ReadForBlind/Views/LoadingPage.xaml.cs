@@ -18,6 +18,8 @@ namespace ReadForBlind.Views
     {
         private BitmapImage bmp_raw;
         private WriteableBitmap bmp;
+        private Reader read;
+
         public LoadingPage()
         {
             InitializeComponent();
@@ -30,11 +32,15 @@ namespace ReadForBlind.Views
 
             // set the image that we got from camera to the bg of loadingpage
             bg.ImageSource = bmp_raw;
+            read = new Reader();
             
         }
 
         private void StartOcr() 
         {
+            read.readText("Image has been captured.");
+            read.readText("Please let me analyse it.");
+
             Utils.deskew(ref bmp);
 
             if (bmp.PixelHeight > 640 || bmp.PixelWidth > 640)
@@ -52,20 +58,21 @@ namespace ReadForBlind.Views
             if (result.Status == Status.Success)
             {
                 int wordCount = 0;
-                StringBuilder sb = new StringBuilder();
+                List<String> text = new List<string>();
                 foreach (OcrText item in result.OcrResult.OcrTexts)
                 {
                     wordCount += item.Words.Count;
-                    sb.AppendLine(item.Text);
+                    text.Add(item.Text);
+                    //sb.AppendLine(item.Text);
                 }
                 //MessageBox.Show(sb.ToString());
-                PhoneApplicationService.Current.State["text"] = sb.ToString();
+                PhoneApplicationService.Current.State["text"] = text;
                 NavigationService.Navigate(new Uri("/Views/OutputPage.xaml", UriKind.Relative));
             }
             else
             {
                 statusText.Text = "[OCR conversion failed]\n" + result.Exception.Message;
-                // TODO: add sound notification
+                read.readText("OCR conversion failed because : " + result.Exception.Message);
             }
         }
 
