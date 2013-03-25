@@ -19,7 +19,7 @@ namespace ReadForBlind.Views
 
         private PhotoCamera camera;
         private MediaLibrary mediaLibrary;
-        private Thread imgageProcessing;
+        private Thread imageProcessing;
         private bool process;
 
         public Camera()
@@ -46,7 +46,7 @@ namespace ReadForBlind.Views
         }
 
         private void cameraInitialized(object sender, CameraOperationCompletedEventArgs e) { 
-        
+           
         }
 
         private void captureCompleted(object sender, CameraOperationCompletedEventArgs e) {
@@ -56,7 +56,13 @@ namespace ReadForBlind.Views
         }
 
         private void captureImageAvailable(object sender, ContentReadyEventArgs e) {
-        
+            Dispatcher.BeginInvoke(delegate() {
+                txtmsg.Text = "Image Available";
+                BitmapImage bmpImage = new BitmapImage();
+                bmpImage.SetSource(e.ImageStream);
+                PhoneApplicationService.Current.State["image"] = bmpImage;
+                NavigationService.Navigate(new Uri("", UriKind.Relative)); //Add Uri here
+            });
         }
             
         private void cameraCanvasTapped(object sender, System.Windows.Input.GestureEventArgs e) {
