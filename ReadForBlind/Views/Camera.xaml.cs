@@ -72,6 +72,14 @@ namespace ReadForBlind.Views
             }
         }
 
-
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            if (camera != null) {
+                camera.Dispose();
+                camera.Initialized -= cameraInitialized;
+                camera.CaptureCompleted -= captureCompleted;
+                camera.CaptureImageAvailable -= captureImageAvailable;
+            }
+        }
     }
 }
