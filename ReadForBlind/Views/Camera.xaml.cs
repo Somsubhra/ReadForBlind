@@ -25,6 +25,13 @@ namespace ReadForBlind.Views
         public Camera()
         {
             InitializeComponent();
+            mediaLibrary = new MediaLibrary();
+        }
+
+        private void cameraCanvasTapped(object sender, System.Windows.Input.GestureEventArgs e) {
+            if (camera != null) {
+                camera.CaptureImage();
+            }
         }
     }
 }
