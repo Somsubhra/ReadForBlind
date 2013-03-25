@@ -30,7 +30,16 @@ namespace ReadForBlind.Views
 
         private void cameraCanvasTapped(object sender, System.Windows.Input.GestureEventArgs e) {
             if (camera != null) {
-                camera.CaptureImage();
+                try
+                {
+                    camera.CaptureImage();
+                }
+
+                catch (Exception ex) {
+                    Dispatcher.BeginInvoke(delegate() {
+                        txtmsg.Text = ex.Message;
+                    });
+                }
             }
         }
     }
