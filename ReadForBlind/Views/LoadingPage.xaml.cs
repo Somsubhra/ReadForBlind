@@ -62,7 +62,10 @@ namespace ReadForBlind.Views
                 foreach (OcrText item in result.OcrResult.OcrTexts)
                 {
                     wordCount += item.Words.Count;
-                    text.Add(item.Text);
+                    foreach (var word in item.Words)
+                    {
+                        text.Add(word.Text);
+                    }
                     //sb.AppendLine(item.Text);
                 }
                 //MessageBox.Show(sb.ToString());

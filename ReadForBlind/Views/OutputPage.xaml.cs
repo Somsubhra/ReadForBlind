@@ -48,13 +48,32 @@ namespace ReadForBlind.Views
         // if it's paused, play it.
         private async void ScreenTap(object sender, System.Windows.Input.GestureEventArgs e)
         {
-             
+            if (cts == null)
+            {
+                cts = new CancellationTokenSource();
+                try
+                {
+                    ReadText(cts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                }
+            }
+            else
+            {
+                cts.Cancel();
+                cts = null;
+            }
         }
 
 
         private async Task ReadText(CancellationToken token)
         {
-           
+            for (; count < text.Count; count++)
+            {
+                token.ThrowIfCancellationRequested();
+                await read.readText(text[count]);
+            }
         }
 
         protected override void OnBackKeyPress(System.ComponentModel.CancelEventArgs e)

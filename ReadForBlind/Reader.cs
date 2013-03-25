@@ -21,7 +21,7 @@ namespace ReadForBlind
 
         public void readWelcomeText() {
             string welcomeText = "Welcome. You may now hold your phone over the text for me to read it aloud.";
-            this.readText(welcomeText);
+            readText(welcomeText);
         }
     }
 }
