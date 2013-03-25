@@ -16,6 +16,12 @@ namespace ReadForBlind.Views
 {
     public partial class Camera : PhoneApplicationPage
     {
+
+        private PhotoCamera camera;
+        private MediaLibrary mediaLibrary;
+        private Thread imgageProcessing;
+        private bool process;
+
         public Camera()
         {
             InitializeComponent();
