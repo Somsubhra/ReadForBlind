@@ -89,5 +89,12 @@ namespace ReadForBlind.Views
                 camera.CaptureImageAvailable -= captureImageAvailable;
             }
         }
+
+        private void startFlash() {
+            if (camera.IsFlashModeSupported(FlashMode.On))
+            {
+                camera.FlashMode = FlashMode.On;
+            }
+        }
     }
 }
