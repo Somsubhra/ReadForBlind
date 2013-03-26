@@ -9,6 +9,7 @@ using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Phone.Speech.Synthesis;
 
 
 namespace ReadForBlind.Views
@@ -16,11 +17,13 @@ namespace ReadForBlind.Views
     public partial class OutputPage : PhoneApplicationPage
     {
         private String readText;
-        int count = 0;
+        int count = 0, maxTextLength;
         List<String> text;
         CancellationTokenSource cts = null;
         Reader reader;
         Listener listener;
+        SpeechSynthesizer synth;
+        bool playing = false;
 
         public OutputPage()
         {
@@ -31,6 +34,7 @@ namespace ReadForBlind.Views
             txt.Text = readText;
             reader = new Reader();
             listener = new Listener();
+            maxTextLength = text.Count;
             startConv();
         }
 
@@ -50,23 +54,52 @@ namespace ReadForBlind.Views
         // if it's paused, play it.
         private void ScreenTap(object sender, System.Windows.Input.GestureEventArgs e)
         {
-            if (cts == null)
+            if (!playing)
                 PlayText();
             else
                 PauseText();
         }
 
         private void PlayText() {
-            cts = new CancellationTokenSource();
-            try{
-                ReadText(cts.Token);
+            synth = new SpeechSynthesizer();
+            synth.BookmarkReached += synth_BookmarkReached;
+            synth.SpeakSsmlAsync(makeSSML(count));
+            playing = true;
+        }
+
+        private string makeSSML(int start){
+            if (start == maxTextLength)
+            {
+                start = 0;
+                count = 0;
             }
-            catch (OperationCanceledException){}
+            String s = "<speak version=\"1.0\" ";
+            s += "xmlns=\"http://www.w3.org/2001/10/synthesis\" xml:lang=\"en-US\">";
+            for (int i = start; i < maxTextLength; i++)
+            {
+                s += text[i];
+                s += "<mark name=\"START\"/>";
+            }
+            s += "<mark name=\"END\"/>";
+            s += "</speak>";
+            return s;
+        }
+
+        private void synth_BookmarkReached(SpeechSynthesizer sender, SpeechBookmarkReachedEventArgs e)
+        {
+            count++;
+            if (e.Bookmark == "END")
+            {
+                playing = false;
+                if(synth != null)
+                    synth.Dispose();
+                
+            }
         }
 
         private void PauseText() {
-            cts.Cancel();
-            cts = null;
+            if(synth != null) synth.Dispose();
+            playing = false;
         }
         private async Task ReadText(CancellationToken token)
         {
