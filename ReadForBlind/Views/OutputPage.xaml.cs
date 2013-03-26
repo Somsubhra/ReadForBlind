@@ -19,7 +19,8 @@ namespace ReadForBlind.Views
         int count = 0;
         List<String> text;
         CancellationTokenSource cts = null;
-        Reader read;
+        Reader reader;
+        Listener listener;
 
         public OutputPage()
         {
@@ -28,13 +29,14 @@ namespace ReadForBlind.Views
             text = (List<String>)PhoneApplicationService.Current.State["text"];
             readText = String.Join(" ", text);
             txt.Text = readText;
-            read = new Reader();
-            //startConv();
+            reader = new Reader();
+            listener = new Listener();
+            startConv();
         }
 
         private async void startConv() 
         {
-            await read.readText("May I reed the text for you? Tap the screen for yes");
+            await reader.readText("May I reed the text for you? Tap the screen for yes");
         }
 
         // this method should listen for the user input: play, pause, restart, etc..
@@ -46,41 +48,63 @@ namespace ReadForBlind.Views
         // Play pause the running speech
         // if it's playing pause it
         // if it's paused, play it.
-        private async void ScreenTap(object sender, System.Windows.Input.GestureEventArgs e)
+        private void ScreenTap(object sender, System.Windows.Input.GestureEventArgs e)
         {
             if (cts == null)
-            {
-                cts = new CancellationTokenSource();
-                try
-                {
-                    ReadText(cts.Token);
-                }
-                catch (OperationCanceledException)
-                {
-                }
-            }
+                PlayText();
             else
-            {
-                cts.Cancel();
-                cts = null;
-            }
+                PauseText();
         }
 
+        private void PlayText() {
+            cts = new CancellationTokenSource();
+            try{
+                ReadText(cts.Token);
+            }
+            catch (OperationCanceledException){}
+        }
 
+        private void PauseText() {
+            cts.Cancel();
+            cts = null;
+        }
         private async Task ReadText(CancellationToken token)
         {
             for (; count < text.Count; count++)
             {
                 token.ThrowIfCancellationRequested();
-                await read.readText(text[count]);
+                await reader.readText(text[count]);
             }
         }
 
-        protected override void OnBackKeyPress(System.ComponentModel.CancelEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            e.Cancel = true;
             NavigationService.RemoveBackEntry();
-            NavigationService.GoBack();
+        }
+
+        //protected override void OnBackKeyPress(System.ComponentModel.CancelEventArgs e)
+        //{
+        //    e.Cancel = true;
+        //    NavigationService.RemoveBackEntry();
+        //    NavigationService.GoBack();
+        //}
+
+        private async void OpenVoiceCommand(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+            string result = await listener.Listen();
+            if (result != null)
+            {
+                if (result.Contains("play") || result.Contains("start") || result.Contains("reed")) {
+                    PlayText();
+                }
+                else if (result.Contains("pause") || result.Contains("stop")) {
+                    PauseText();
+                }
+                else if (result.Contains("new") || result.Contains("photo")) {
+                    NavigationService.GoBack();
+                }
+            }
+            
         }
     }
 }

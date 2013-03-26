@@ -167,6 +167,7 @@
     <Content Include="Images\c2.png" />
     <Content Include="Images\helloworld.jpg" />
     <Content Include="Images\m20.jpg" />
+    <Content Include="SplashScreenImage.jpg" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\AppResources.resx">

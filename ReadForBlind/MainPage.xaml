@@ -46,6 +46,7 @@
 
         <!--ContentPanel - place additional content here-->
         <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,0">
+            <Button Content="Button" HorizontalAlignment="Left" Margin="374,119,0,0" VerticalAlignment="Top" Click="recog"/>
 
         </Grid>
 

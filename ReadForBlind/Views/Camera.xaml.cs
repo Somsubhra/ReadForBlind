@@ -21,11 +21,13 @@ namespace ReadForBlind.Views
         private MediaLibrary mediaLibrary;
         private Thread imageProcessing;
         private bool process;
+        private Reader read;
 
         public Camera()
         {
             InitializeComponent();
             mediaLibrary = new MediaLibrary();
+            read = new Reader();
         }
 
 
@@ -40,9 +42,9 @@ namespace ReadForBlind.Views
                 camera.CaptureImageAvailable += new EventHandler<ContentReadyEventArgs>(captureImageAvailable);
                 viewfinderBrush.SetSource(camera);
             }
-
-            else { 
-                
+            else
+            {
+                read.readText("Sorry, but I can't find a working camera on this device");
             }
         }
 
@@ -60,9 +62,10 @@ namespace ReadForBlind.Views
             Dispatcher.BeginInvoke(delegate() {
                 txtmsg.Text = "Image Available";
                 BitmapImage bmpImage = new BitmapImage();
+                bmpImage.CreateOptions = BitmapCreateOptions.None;
                 bmpImage.SetSource(e.ImageStream);
                 PhoneApplicationService.Current.State["image"] = bmpImage;
-                NavigationService.Navigate(new Uri("", UriKind.Relative)); //Add Uri here
+                NavigationService.Navigate(new Uri("/Views/LoadingPage.xaml", UriKind.Relative));
             });
         }
             

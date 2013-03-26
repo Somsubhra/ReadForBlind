@@ -20,7 +20,7 @@ namespace ReadForBlind
         }
 
         public void readWelcomeText() {
-            string welcomeText = "Welcome. You may now hold your phone over the text for me to read it aloud.";
+            string welcomeText = "Welcome. You may now hold your phone over the text for me to reader it aloud.";
             readText(welcomeText);
         }
     }
