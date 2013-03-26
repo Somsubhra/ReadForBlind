@@ -97,20 +97,32 @@ namespace ReadForBlind.Views
         private void startFlash() {
             if (camera.IsFlashModeSupported(FlashMode.On))
             {
-                camera.FlashMode = FlashMode.On;
+                try
+                {
+                    camera.FlashMode = FlashMode.On;
+                }
+                catch (Exception ex) { }
             }
         }
 
         private void stopFlash() {
             if (camera.IsFlashModeSupported(FlashMode.Off))
             {
-                    camera.FlashMode = FlashMode.Off;  
+                try
+                {
+                    camera.FlashMode = FlashMode.Off;
+                }
+                catch (Exception ex) { }
             }
         }
 
         private void setAutoFlash() {
             if (camera.IsFlashModeSupported(FlashMode.Auto)) {
-                camera.FlashMode = FlashMode.Auto;
+                try
+                {
+                    camera.FlashMode = FlashMode.Auto;
+                }
+                catch(Exception ex) { }
             }
         }
     }
