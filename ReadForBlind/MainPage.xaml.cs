@@ -21,7 +21,5 @@ namespace ReadForBlind
             // Sample code to localize the ApplicationBar
             //BuildLocalizedApplicationBar();
         }
-
-        
     }
 }

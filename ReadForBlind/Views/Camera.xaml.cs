@@ -21,13 +21,15 @@ namespace ReadForBlind.Views
         private MediaLibrary mediaLibrary;
         private Thread imageProcessing;
         private bool process;
-        private Reader read;
+        private Reader reader;
+        private Listener listener;
 
         public Camera()
         {
             InitializeComponent();
             mediaLibrary = new MediaLibrary();
-            read = new Reader();
+            reader = new Reader();
+            listener = new Listener();
         }
 
 
@@ -44,7 +46,7 @@ namespace ReadForBlind.Views
             }
             else
             {
-                read.readText("Sorry, but I can't find a working camera on this device");
+                reader.readText("Sorry, but I can't find a working camera on this device");
             }
         }
 
@@ -111,6 +113,26 @@ namespace ReadForBlind.Views
         private void setAutoFlash() {
             if (camera.IsFlashModeSupported(FlashMode.Auto)) {
                 camera.FlashMode = FlashMode.Auto;
+            }
+        }
+
+        private async void OpenVoiceCommand(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+            string result = await listener.Listen();
+            if (result != null)
+            {
+                if (result.Contains("play") || result.Contains("start") || result.Contains("reed"))
+                {
+                    reader.readText("An image of the text has to be captured before reading it.");
+                }
+                else if (result.Contains("pause") || result.Contains("stop"))
+                {
+                    reader.readText("If you want to exit the app, say exit");
+                }
+                else if (result.Contains("new") || result.Contains("photo"))
+                {
+                    reader.readText("You are currently on new photo page");
+                }
             }
         }
     }

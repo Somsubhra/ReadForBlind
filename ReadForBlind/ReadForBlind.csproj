@@ -167,7 +167,7 @@
     <Content Include="Images\c2.png" />
     <Content Include="Images\helloworld.jpg" />
     <Content Include="Images\m20.jpg" />
-    <Content Include="notify.wav" />
+    <Content Include="Assets\notify.wav" />
     <Content Include="SplashScreenImage.jpg" />
   </ItemGroup>
   <ItemGroup>

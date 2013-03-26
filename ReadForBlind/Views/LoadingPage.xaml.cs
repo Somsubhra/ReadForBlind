@@ -18,7 +18,8 @@ namespace ReadForBlind.Views
     {
         private BitmapImage bmp_raw;
         private WriteableBitmap bmp;
-        private Reader read;
+        private Reader reader;
+        private Listener listener;
 
         public LoadingPage()
         {
@@ -32,14 +33,14 @@ namespace ReadForBlind.Views
 
             // set the image that we got from camera to the bg of loadingpage
             bg.ImageSource = bmp_raw;
-            read = new Reader();
-            
+            reader = new Reader();
+            listener = new Listener();
         }
 
         private void StartOcr() 
         {
-            read.readText("Image has been captured.");
-            read.readText("Please let me analyse it.");
+            reader.readText("Image has been captured.");
+            reader.readText("Please let me analyse it.");
 
             Utils.deskew(ref bmp);
 
@@ -53,7 +54,7 @@ namespace ReadForBlind.Views
             });
         }
 
-        private void OnOcrComplete(OcrServiceResult result)
+        private async void OnOcrComplete(OcrServiceResult result)
         {
             if (result.Status == Status.Success)
             {
@@ -75,7 +76,15 @@ namespace ReadForBlind.Views
             else
             {
                 statusText.Text = "[OCR conversion failed]\n" + result.Exception.Message;
-                read.readText("OCR conversion failed because : " + result.Exception.Message);
+                reader.readText("OCR conversion failed because : " + result.Exception.Message);
+                reader.readText("Do you want to retry?");
+                if (await listener.ConversionFailedConfirmation() == "yes") {
+                    StartOcr();
+                }
+                else {
+                    reader.readText("Getting back to new photo screen");
+                    NavigationService.GoBack();
+                }
             }
         }
 

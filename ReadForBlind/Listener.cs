@@ -35,13 +35,7 @@ namespace ReadForBlind
         }
 
         public async Task<String> Listen() {
-            Stream stream = TitleContainer.OpenStream("notify.wav");
-            if (stream != null)
-            {
-                var effect = SoundEffect.FromStream(stream);
-                FrameworkDispatcher.Update();
-                effect.Play();
-            }
+            playSound();
             SpeechRecognitionResult result = await listener.RecognizeAsync();
             if (result.TextConfidence == SpeechRecognitionConfidence.High && result.Text.Length > 0)
                 return IsBuiltIn(result.Text);
@@ -50,12 +44,35 @@ namespace ReadForBlind
             return null;
         }
 
+        private void playSound() {
+            Stream stream = TitleContainer.OpenStream("Assets/notify.wav");
+            if (stream != null)
+            {
+                var effect = SoundEffect.FromStream(stream);
+                FrameworkDispatcher.Update();
+                effect.Play();
+            }
+        }
+
         private String IsBuiltIn(String txt) {
             txt = txt.ToLower();
             if (txt.Contains("quit") || txt.Contains("exit") || txt.Contains("close")) {
                 Application.Current.Terminate();
             }
             return txt;
+        }
+
+        public async Task<String> ConversionFailedConfirmation() {
+            playSound();
+            SpeechRecognizer sp = new SpeechRecognizer();
+            string[] confirm = { "yes", "no" };
+            sp.Grammars.AddGrammarFromList("confirm", confirm);
+            SpeechRecognitionResult result = await listener.RecognizeAsync();
+            if (result.TextConfidence >= SpeechRecognitionConfidence.Medium && result.Text.Length > 0)
+                return result.Text.ToLower();
+            else
+                await reader.readText("Sorry but I didn't get you");
+            return null;
         }
     }
 }
