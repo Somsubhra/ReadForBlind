@@ -91,19 +91,22 @@ namespace ReadForBlind.Views
 
         private async void OpenVoiceCommand(object sender, System.Windows.Input.GestureEventArgs e)
         {
-            //string result = await listener.Listen();
-            //if (result != null)
-            //{
-            //    if (result.Contains("play") || result.Contains("start") || result.Contains("reed")) {
-            //        PlayText();
-            //    }
-            //    else if (result.Contains("pause") || result.Contains("stop")) {
-            //        PauseText();
-            //    }
-            //    else if (result.Contains("new") || result.Contains("photo")) {
-            //        NavigationService.GoBack();
-            //    }
-            //}
+            string result = await listener.Listen();
+            if (result != null)
+            {
+                if (result.Contains("play") || result.Contains("start") || result.Contains("reed"))
+                {
+                    PlayText();
+                }
+                else if (result.Contains("pause") || result.Contains("stop"))
+                {
+                    PauseText();
+                }
+                else if (result.Contains("new") || result.Contains("photo"))
+                {
+                    NavigationService.GoBack();
+                }
+            }
             
         }
     }
