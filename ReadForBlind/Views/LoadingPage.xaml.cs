@@ -37,7 +37,7 @@ namespace ReadForBlind.Views
             listener = new Listener();
         }
 
-        private void StartOcr() 
+        private void StartOcr()
         {
             reader.readText("Image has been captured.");
             reader.readText("Please let me analyse it.");
@@ -78,10 +78,12 @@ namespace ReadForBlind.Views
                 statusText.Text = "[OCR conversion failed]\n" + result.Exception.Message;
                 reader.readText("OCR conversion failed because : " + result.Exception.Message);
                 reader.readText("Do you want to retry?");
-                if (await listener.ConversionFailedConfirmation() == "yes") {
+                if (await listener.ConversionFailedConfirmation() == "yes")
+                {
                     StartOcr();
                 }
-                else {
+                else
+                {
                     reader.readText("Getting back to new photo screen");
                     NavigationService.GoBack();
                 }

@@ -11,15 +11,18 @@ namespace ReadForBlind
     {
         private SpeechSynthesizer reader;
 
-        public Reader() {
+        public Reader()
+        {
             reader = new SpeechSynthesizer();
         }
 
-        public async Task readText(string text) {
+        public async Task readText(string text)
+        {
             await reader.SpeakTextAsync(text);
         }
 
-        public void readWelcomeText() {
+        public void readWelcomeText()
+        {
             string welcomeText = "Welcome. You may now hold your phone over the text for me to reader it aloud.";
             readText(welcomeText);
         }

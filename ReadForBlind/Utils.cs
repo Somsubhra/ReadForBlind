@@ -36,7 +36,7 @@ namespace ReadForBlind
         }
 
         // call by reference
-        public static void resizeImage( ref WriteableBitmap bmp )
+        public static void resizeImage(ref WriteableBitmap bmp)
         {
             // TODO: memory management 
             // we have 2 options

@@ -16,14 +16,16 @@ namespace ReadForBlind
         private SpeechRecognizer listener;
         private Reader reader;
 
-        public Listener() {
+        public Listener()
+        {
             listener = new SpeechRecognizer();
             reader = new Reader();
             loadGrammar();
         }
 
-        private void loadGrammar() {
-            string[] actions = { "play", "pause", "reed", "stop", "close", "exit", "quit", "start" };
+        private void loadGrammar()
+        {
+            string[] actions = { "play", "pause", "reed", "stop", "close", "exit", "quit", "start", "repeat", "restart" };
 
             listener.AudioProblemOccurred += Recognizer_AudioProblemOccurred;
             listener.Grammars.AddGrammarFromList("actions", actions);
@@ -34,7 +36,8 @@ namespace ReadForBlind
             await reader.readText("Please speak clearly.");
         }
 
-        public async Task<String> Listen() {
+        public async Task<String> Listen()
+        {
             playSound();
             SpeechRecognitionResult result = await listener.RecognizeAsync();
             if (result.TextConfidence == SpeechRecognitionConfidence.High && result.Text.Length > 0)
@@ -44,7 +47,8 @@ namespace ReadForBlind
             return null;
         }
 
-        private void playSound() {
+        public void playSound()
+        {
             Stream stream = TitleContainer.OpenStream("Assets/notify.wav");
             if (stream != null)
             {
@@ -54,15 +58,29 @@ namespace ReadForBlind
             }
         }
 
-        private String IsBuiltIn(String txt) {
+        public void PlaySpeechOff()
+        {
+            Stream stream = TitleContainer.OpenStream("Assets/SpeechOff.wav");
+            if (stream != null)
+            {
+                var effect = SoundEffect.FromStream(stream);
+                FrameworkDispatcher.Update();
+                effect.Play();
+            }
+        }
+
+        private String IsBuiltIn(String txt)
+        {
             txt = txt.ToLower();
-            if (txt.Contains("quit") || txt.Contains("exit") || txt.Contains("close")) {
+            if (txt.Contains("quit") || txt.Contains("exit") || txt.Contains("close"))
+            {
                 Application.Current.Terminate();
             }
             return txt;
         }
 
-        public async Task<String> ConversionFailedConfirmation() {
+        public async Task<String> ConversionFailedConfirmation()
+        {
             playSound();
             SpeechRecognizer sp = new SpeechRecognizer();
             string[] confirm = { "yes", "no" };

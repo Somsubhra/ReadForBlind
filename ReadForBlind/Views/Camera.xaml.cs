@@ -50,18 +50,23 @@ namespace ReadForBlind.Views
             }
         }
 
-        private void cameraInitialized(object sender, CameraOperationCompletedEventArgs e) { 
-           
+        private void cameraInitialized(object sender, CameraOperationCompletedEventArgs e)
+        {
+
         }
 
-        private void captureCompleted(object sender, CameraOperationCompletedEventArgs e) {
-            Dispatcher.BeginInvoke(delegate() {
+        private void captureCompleted(object sender, CameraOperationCompletedEventArgs e)
+        {
+            Dispatcher.BeginInvoke(delegate()
+            {
                 txtmsg.Text = "Image captured";
             });
         }
 
-        private void captureImageAvailable(object sender, ContentReadyEventArgs e) {
-            Dispatcher.BeginInvoke(delegate() {
+        private void captureImageAvailable(object sender, ContentReadyEventArgs e)
+        {
+            Dispatcher.BeginInvoke(delegate()
+            {
                 txtmsg.Text = "Image Available";
                 BitmapImage bmpImage = new BitmapImage();
                 bmpImage.CreateOptions = BitmapCreateOptions.None;
@@ -70,16 +75,20 @@ namespace ReadForBlind.Views
                 NavigationService.Navigate(new Uri("/Views/LoadingPage.xaml", UriKind.Relative));
             });
         }
-            
-        private void cameraCanvasTapped(object sender, System.Windows.Input.GestureEventArgs e) {
-            if (camera != null) {
+
+        private void cameraCanvasTapped(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+            if (camera != null)
+            {
                 try
                 {
                     camera.CaptureImage();
                 }
 
-                catch (Exception ex) {
-                    Dispatcher.BeginInvoke(delegate() {
+                catch (Exception ex)
+                {
+                    Dispatcher.BeginInvoke(delegate()
+                    {
                         txtmsg.Text = ex.Message;
                     });
                 }
@@ -88,7 +97,8 @@ namespace ReadForBlind.Views
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            if (camera != null) {
+            if (camera != null)
+            {
                 camera.Dispose();
                 camera.Initialized -= cameraInitialized;
                 camera.CaptureCompleted -= captureCompleted;
@@ -96,7 +106,8 @@ namespace ReadForBlind.Views
             }
         }
 
-        private void startFlash() {
+        private void startFlash()
+        {
             if (camera.IsFlashModeSupported(FlashMode.On))
             {
                 try
@@ -107,7 +118,8 @@ namespace ReadForBlind.Views
             }
         }
 
-        private void stopFlash() {
+        private void stopFlash()
+        {
             if (camera.IsFlashModeSupported(FlashMode.Off))
             {
                 try
@@ -118,13 +130,15 @@ namespace ReadForBlind.Views
             }
         }
 
-        private void setAutoFlash() {
-            if (camera.IsFlashModeSupported(FlashMode.Auto)) {
+        private void setAutoFlash()
+        {
+            if (camera.IsFlashModeSupported(FlashMode.Auto))
+            {
                 try
                 {
                     camera.FlashMode = FlashMode.Auto;
                 }
-                catch(Exception ex) { }
+                catch (Exception ex) { }
             }
         }
 

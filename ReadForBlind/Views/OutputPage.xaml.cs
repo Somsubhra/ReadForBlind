@@ -19,7 +19,6 @@ namespace ReadForBlind.Views
         private String readText;
         int count = 0, maxTextLength;
         List<String> text;
-        CancellationTokenSource cts = null;
         Reader reader;
         Listener listener;
         SpeechSynthesizer synth;
@@ -38,7 +37,7 @@ namespace ReadForBlind.Views
             startConv();
         }
 
-        private async void startConv() 
+        private async void startConv()
         {
             await reader.readText("May I reed the text for you? Tap the screen for yes");
         }
@@ -60,22 +59,23 @@ namespace ReadForBlind.Views
                 PauseText();
         }
 
-        private void PlayText() {
+        private void PlayText()
+        {
             synth = new SpeechSynthesizer();
             synth.BookmarkReached += synth_BookmarkReached;
-            synth.SpeakSsmlAsync(makeSSML(count));
+            synth.SpeakSsmlAsync(makeSSML());
             playing = true;
         }
 
-        private string makeSSML(int start){
-            if (start == maxTextLength)
+        private string makeSSML()
+        {
+            if (count == maxTextLength)
             {
-                start = 0;
                 count = 0;
             }
             String s = "<speak version=\"1.0\" ";
             s += "xmlns=\"http://www.w3.org/2001/10/synthesis\" xml:lang=\"en-US\">";
-            for (int i = start; i < maxTextLength; i++)
+            for (int i = count; i < maxTextLength; i++)
             {
                 s += text[i];
                 s += "<mark name=\"START\"/>";
@@ -85,20 +85,21 @@ namespace ReadForBlind.Views
             return s;
         }
 
-        private void synth_BookmarkReached(SpeechSynthesizer sender, SpeechBookmarkReachedEventArgs e)
+        private async void synth_BookmarkReached(SpeechSynthesizer sender, SpeechBookmarkReachedEventArgs e)
         {
             count++;
             if (e.Bookmark == "END")
             {
+                listener.PlaySpeechOff();
                 playing = false;
-                if(synth != null)
+                if (synth != null)
                     synth.Dispose();
-                
             }
         }
 
-        private void PauseText() {
-            if(synth != null) synth.Dispose();
+        private void PauseText()
+        {
+            if (synth != null) synth.Dispose();
             playing = false;
         }
         private async Task ReadText(CancellationToken token)
@@ -139,8 +140,13 @@ namespace ReadForBlind.Views
                 {
                     NavigationService.GoBack();
                 }
+                else if (result.Contains("repeat") || result.Contains("restart"))
+                {
+                    count = 0;
+                    PlayText();
+                }
             }
-            
+
         }
     }
 }
