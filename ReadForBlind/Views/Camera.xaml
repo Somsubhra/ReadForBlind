@@ -24,6 +24,7 @@
                 <VideoBrush x:Name="viewfinderBrush" />
             </Canvas.Background>
             <TextBlock x:Name="txtmsg" Canvas.Left="56" TextWrapping="Wrap" Text="TextBlock" Canvas.Top="443"/>
+            <Image x:Name="img" Height="180" Canvas.Left="468" Canvas.Top="290" Width="250"/>
         </Canvas>
     </Grid>
 

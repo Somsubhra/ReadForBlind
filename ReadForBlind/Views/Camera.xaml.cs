@@ -18,20 +18,76 @@ namespace ReadForBlind.Views
     {
 
         private PhotoCamera camera;
-        private MediaLibrary mediaLibrary;
         private Thread imageProcessing;
-        private bool process;
         private Reader reader;
         private Listener listener;
+        private static bool pumpARGBFrames;
+        private static ManualResetEvent pauseFramesEvent = new ManualResetEvent(true);
+        private WriteableBitmap wb, wbl;   // wb for original image    // wbl for lower resolution image
 
         public Camera()
         {
             InitializeComponent();
-            mediaLibrary = new MediaLibrary();
             reader = new Reader();
             listener = new Listener();
         }
 
+        private void Process() {
+            int w = (int)camera.PreviewResolution.Width;    // width
+            int h = (int)camera.PreviewResolution.Height;   // height
+            int w2 = w / 2;     // half the image width
+            int h2 = h / 2;     // half the image height
+            int[] ARGBPx = new int[w * h];      // original pixels
+            int[] ARGBPl = new int[320 * 240];  // lower resolution pixels
+
+            try
+            {
+                PhotoCamera phCam = (PhotoCamera)camera;
+                while (pumpARGBFrames)
+                {
+                    pauseFramesEvent.WaitOne();
+                    phCam.GetPreviewBufferArgb32(ARGBPx);
+                    Deployment.Current.Dispatcher.BeginInvoke(delegate()
+                    {
+                        // REsize for performance gain
+                        ARGBPx.CopyTo(wb.Pixels, 0);
+                        wbl = wb.Resize(w2, h2, WriteableBitmapExtensions.Interpolation.Bilinear);
+                    });
+                    // Get skew angle
+                    Utils.Deskew d = new Utils.Deskew(wbl);
+                    double skewAngle = -1 * d.GetSkewAngle();
+                    Deployment.Current.Dispatcher.BeginInvoke(delegate()
+                    {
+                        // Deskew
+                        wbl = wbl.RotateFree(skewAngle);
+                    });
+                    wbl.Pixels.CopyTo(ARGBPl, 0);   // copy resized image pixels to array for further process in other thread
+                    //ARGBPl = UtilsArray.GrayScale(ARGBPl);
+                    ARGBPl = UtilsArray.Binarize(ARGBPl, 51);   // try & error with threashold value
+                    ARGBPl = UtilsArray.Bitwise_not(ARGBPl);    // BUGGY - Makes the image disappear
+                    ARGBPl = UtilsArray.Erode(ARGBPl, w2, h2);  // Erode the image
+                    pauseFramesEvent.Reset();
+                    Deployment.Current.Dispatcher.BeginInvoke(delegate()
+                    {
+                        // Copy back to lower resolution bitmapimage
+                        ARGBPl.CopyTo(wbl.Pixels, 0);
+                        wbl.Invalidate();
+                        // TODO: identify if the image is complete, 
+                        // IF yes, capture => stop this thread => crop the text area => send to hawaii => hope for best results
+                        // else, continue
+                        pauseFramesEvent.Set();
+                    });
+                }
+            }
+            catch (Exception e)
+            {
+                Dispatcher.BeginInvoke(delegate()
+                {
+                    // Display error message.
+                    txtmsg.Text = e.Message;
+                });
+            }
+        }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -52,7 +108,15 @@ namespace ReadForBlind.Views
 
         private void cameraInitialized(object sender, CameraOperationCompletedEventArgs e)
         {
-
+            Dispatcher.BeginInvoke(delegate() {
+                imageProcessing = new Thread(Process);
+                pumpARGBFrames = true;
+                wb = new WriteableBitmap((int)camera.PreviewResolution.Width, (int)camera.PreviewResolution.Height);
+                wbl = new WriteableBitmap(320, 240);
+                img.Source = wb;
+                imageProcessing.Start();
+                txtmsg.Text = "width = " + camera.PreviewResolution.Width.ToString() + " height = " + camera.PreviewResolution.Height.ToString();
+            });
         }
 
         private void captureCompleted(object sender, CameraOperationCompletedEventArgs e)
@@ -99,6 +163,7 @@ namespace ReadForBlind.Views
         {
             if (camera != null)
             {
+                pumpARGBFrames = false;
                 camera.Dispose();
                 camera.Initialized -= cameraInitialized;
                 camera.CaptureCompleted -= captureCompleted;
