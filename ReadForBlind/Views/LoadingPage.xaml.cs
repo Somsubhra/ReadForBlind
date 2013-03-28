@@ -20,6 +20,7 @@ namespace ReadForBlind.Views
         private WriteableBitmap bmp;
         private Reader reader;
         private Listener listener;
+        private Utils utils;
 
         public LoadingPage()
         {
@@ -30,11 +31,17 @@ namespace ReadForBlind.Views
             //bmp_raw = (BitmapImage)PhoneApplicationService.Current.State["image"];
             bmp_raw = new BitmapImage(new Uri("/images/m20.jpg", UriKind.Relative));
             bmp_raw.CreateOptions = BitmapCreateOptions.None;       // makes the image creating instantaneous
-
-            // set the image that we got from camera to the bg of loadingpage
-            bg.ImageSource = bmp_raw;
+            bmp_raw.ImageOpened += bmp_raw_ImageOpened;
+            
             reader = new Reader();
             listener = new Listener();
+        }
+
+        private void bmp_raw_ImageOpened(object sender, RoutedEventArgs e)
+        {
+            // set the image that we got from camera to the bg of loadingpage
+            bg.ImageSource = bmp_raw;
+            utils = new Utils(bmp_raw.PixelWidth, bmp_raw.PixelHeight);
         }
 
         private void StartOcr()
@@ -42,7 +49,7 @@ namespace ReadForBlind.Views
             reader.readText("Image has been captured.");
             reader.readText("Please let me analyse it.");
 
-            Utils.deskew(ref bmp);
+            utils.deskew(ref bmp);
 
             if (bmp.PixelHeight > 640 || bmp.PixelWidth > 640)
                 Utils.resizeImage(ref bmp);

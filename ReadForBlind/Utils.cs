@@ -15,6 +15,8 @@ namespace ReadForBlind
 {
     public class Utils
     {
+        private int width, height;
+
         /// <summary>
         /// The Hawaii Application Id.
         /// </summary>
@@ -66,7 +68,342 @@ namespace ReadForBlind
             bmp.SetSource(ms);
         }
 
-        public static void deskew(ref WriteableBitmap bmp)
+        public Utils(int width, int height)
+        {
+            this.width = width;
+            this.height = height;
+        }
+
+        public int[] GrayScale(int[] pixels)
+        {
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = ColorToGray(pixels[i]);
+            }
+            return pixels;
+        }
+
+        public int[] Binarize(int[] pixels, int threshold)
+        {
+
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                int color = pixels[i];
+                int a = color >> 24;
+                int r = (color & 0x00ff0000) >> 16;
+                int g = (color & 0x0000ff00) >> 8;
+                int b = (color & 0x000000ff);
+                int lumi = (7 * r + 38 * g + 19 * b + 32) >> 6;
+                if (lumi < threshold)
+                    pixels[i] = 0;
+                else
+                    pixels[i] = ~0;
+            }
+            return pixels;
+        }
+
+        public int[] Bitwise_not(int[] pixels)
+        {
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = ~pixels[i];
+            }
+            return pixels;
+        }
+
+        private int ColorToGray(int color)
+        {
+            int gray = 0;
+
+            int a = color >> 24;
+            int r = (color & 0x00ff0000) >> 16;
+            int g = (color & 0x0000ff00) >> 8;
+            int b = (color & 0x000000ff);
+
+            if ((r == g) && (g == b))
+            {
+                gray = color;
+            }
+            else
+            {
+                // Calculate for the illumination.
+                // I =(int)(0.109375*R + 0.59375*G + 0.296875*B + 0.5)
+                int i = (7 * r + 38 * g + 19 * b + 32) >> 6;
+
+                gray = ((a & 0xFF) << 24) | ((i & 0xFF) << 16) | ((i & 0xFF) << 8) | (i & 0xFF);
+            }
+            return gray;
+        }
+
+        public Boundaries CheckBoundaries(int[] pixels)
+        {
+            // check left
+            double boundayFactor = 0.1; //10% of the image width/height
+            Boundaries b = new Boundaries();
+            b.Left = CheckLeft(pixels, boundayFactor);
+            b.Right = CheckRight(pixels, boundayFactor);
+            b.Top = CheckTop(pixels, boundayFactor);
+            b.Bottom = CheckBottom(pixels, boundayFactor);
+            return b;
+        }
+
+        private bool CheckLeft(int[] bmp, double bf)
+        {
+            int l = (int)Math.Ceiling(this.width * bf);
+            for (int i = 0; i < l; i++)
+            {
+                int count = 0;
+                for (int j = 0; j < this.height - 1; j++)
+                {
+                    if (GetPixel(bmp, j, i) != 0)
+                    {
+                        count++;
+                    }
+                }
+                if (count > 12)
+                    return true;
+            }
+            return false;
+        }
+
+        private bool CheckRight(int[] bmp, double bf)
+        {
+            int l = (int)Math.Floor(this.width * (1 - bf));
+            for (int i = this.width - 1; i >= l; i--)
+            {
+                int count = 0;
+                for (int j = 0; j < this.height; j++)
+                {
+                    if (GetPixel(bmp, j, i) != 0)
+                    {
+                        count++;
+                    }
+                }
+                if (count > 12)
+                    return true;
+            }
+            return false;
+        }
+
+        private bool CheckTop(int[] bmp, double bf)
+        {
+            int l = (int)Math.Ceiling(this.height * bf);
+            for (int i = 0; i < l; i++)
+            {
+                int count = 0;
+                for (int j = 0; j < this.width; j++)
+                {
+                    if (GetPixel(bmp, i, j) != 0)
+                    {
+                        count++;
+                    }
+                }
+                if (count > 12)
+                    return true;
+            }
+            return false;
+        }
+
+        private bool CheckBottom(int[] bmp, double bf)
+        {
+            int l = (int)Math.Floor(this.height * (1 - bf));
+            for (int i = this.height - 1; i >= l; i--)
+            {
+                int count = 0;
+                for (int j = 0; j < this.width; j++)
+                {
+                    if (GetPixel(bmp, i, j) != 0)
+                    {
+                        count++;
+                    }
+                }
+                if (count > 12)
+                    return true;
+            }
+            return false;
+        }
+
+        private int GetPixel(int[] pixels, int i, int j)
+        {
+            return pixels[(this.width * i) + j];
+        }
+
+        public class Boundaries
+        {
+            public bool Left { get; set; }
+            public bool Right { get; set; }
+            public bool Top { get; set; }
+            public bool Bottom { get; set; }
+        }
+
+        public int[] Erode(int[] rp, int width, int height)
+        {
+            int CompareEmptyColor = 0;
+            var w = width;
+            var h = height;
+            int[] p = new int[rp.Length];
+            //rp = p;
+            for (int j = 0; j < p.Length; j++)
+            {
+                p[j] = rp[j];
+                rp[j] = 0;
+            }
+            var empty = CompareEmptyColor;
+            int c, cm;
+            int i = 0;
+
+            // Erode every pixel
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++, i++)
+                {
+                    // Middle pixel
+                    cm = p[y * w + x];
+                    if (cm == empty) { continue; }
+
+                    // Row 0
+                    // Left pixel
+                    if (x - 2 > 0 && y - 2 > 0)
+                    {
+                        c = p[(y - 2) * w + (x - 2)];
+                        if (c == empty) { continue; }
+                    }
+                    // Middle left pixel
+                    if (x - 1 > 0 && y - 2 > 0)
+                    {
+                        c = p[(y - 2) * w + (x - 1)];
+                        if (c == empty) { continue; }
+                    }
+                    if (y - 2 > 0)
+                    {
+                        c = p[(y - 2) * w + x];
+                        if (c == empty) { continue; }
+                    }
+                    if (x + 1 < w && y - 2 > 0)
+                    {
+                        c = p[(y - 2) * w + (x + 1)];
+                        if (c == empty) { continue; }
+                    }
+                    if (x + 2 < w && y - 2 > 0)
+                    {
+                        c = p[(y - 2) * w + (x + 2)];
+                        if (c == empty) { continue; }
+                    }
+
+                    // Row 1
+                    // Left pixel
+                    if (x - 2 > 0 && y - 1 > 0)
+                    {
+                        c = p[(y - 1) * w + (x - 2)];
+                        if (c == empty) { continue; }
+                    }
+                    if (x - 1 > 0 && y - 1 > 0)
+                    {
+                        c = p[(y - 1) * w + (x - 1)];
+                        if (c == empty) { continue; }
+                    }
+                    if (y - 1 > 0)
+                    {
+                        c = p[(y - 1) * w + x];
+                        if (c == empty) { continue; }
+                    }
+                    if (x + 1 < w && y - 1 > 0)
+                    {
+                        c = p[(y - 1) * w + (x + 1)];
+                        if (c == empty) { continue; }
+                    }
+                    if (x + 2 < w && y - 1 > 0)
+                    {
+                        c = p[(y - 1) * w + (x + 2)];
+                        if (c == empty) { continue; }
+                    }
+
+                    // Row 2
+                    if (x - 2 > 0)
+                    {
+                        c = p[y * w + (x - 2)];
+                        if (c == empty) { continue; }
+                    }
+                    if (x - 1 > 0)
+                    {
+                        c = p[y * w + (x - 1)];
+                        if (c == empty) { continue; }
+                    }
+                    if (x + 1 < w)
+                    {
+                        c = p[y * w + (x + 1)];
+                        if (c == empty) { continue; }
+                    }
+                    if (x + 2 < w)
+                    {
+                        c = p[y * w + (x + 2)];
+                        if (c == empty) { continue; }
+                    }
+
+                    // Row 3
+                    if (x - 2 > 0 && y + 1 < h)
+                    {
+                        c = p[(y + 1) * w + (x - 2)];
+                        if (c == empty) { continue; }
+                    }
+                    if (x - 1 > 0 && y + 1 < h)
+                    {
+                        c = p[(y + 1) * w + (x - 1)];
+                        if (c == empty) { continue; }
+                    }
+                    if (y + 1 < h)
+                    {
+                        c = p[(y + 1) * w + x];
+                        if (c == empty) { continue; }
+                    }
+                    if (x + 1 < w && y + 1 < h)
+                    {
+                        c = p[(y + 1) * w + (x + 1)];
+                        if (c == empty) { continue; }
+                    }
+                    if (x + 2 < w && y + 1 < h)
+                    {
+                        c = p[(y + 1) * w + (x + 2)];
+                        if (c == empty) { continue; }
+                    }
+
+                    // Row 4
+                    if (x - 2 > 0 && y + 2 < h)
+                    {
+                        c = p[(y + 2) * w + (x - 2)];
+                        if (c == empty) { continue; }
+                    }
+                    if (x - 1 > 0 && y + 2 < h)
+                    {
+                        c = p[(y + 2) * w + (x - 1)];
+                        if (c == empty) { continue; }
+                    }
+                    if (y + 2 < h)
+                    {
+                        c = p[(y + 2) * w + x];
+                        if (c == empty) { continue; }
+                    }
+                    if (x + 1 < w && y + 2 < h)
+                    {
+                        c = p[(y + 2) * w + (x + 1)];
+                        if (c == empty) { continue; }
+                    }
+                    if (x + 2 < w && y + 2 < h)
+                    {
+                        c = p[(y + 2) * w + (x + 2)];
+                        if (c == empty) { continue; }
+                    }
+
+                    // If all neighboring pixels are processed 
+                    // it's clear that the current pixel is not a boundary pixel.
+                    rp[i] = cm;
+                }
+            }
+
+            return rp;
+        }
+
+        public void deskew(ref WriteableBitmap bmp)
         {
             Deskew sk = new Deskew(bmp);
             double skewAngle = -1 * sk.GetSkewAngle();

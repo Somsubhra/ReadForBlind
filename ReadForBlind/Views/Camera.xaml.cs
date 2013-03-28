@@ -11,6 +11,7 @@ using Microsoft.Devices;
 using Microsoft.Xna.Framework.Media;
 using System.Windows.Media.Imaging;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ReadForBlind.Views
 {
@@ -23,7 +24,8 @@ namespace ReadForBlind.Views
         private Listener listener;
         private static bool pumpARGBFrames;
         private static ManualResetEvent pauseFramesEvent = new ManualResetEvent(true);
-        private WriteableBitmap wb, wbl;   // wb for original image    // wbl for lower resolution image
+        private WriteableBitmap wb;   // wb for original image
+        private Utils utils;
 
         public Camera()
         {
@@ -32,7 +34,8 @@ namespace ReadForBlind.Views
             listener = new Listener();
         }
 
-        private void Process() {
+        private async void Process()
+        {
             int w = (int)camera.PreviewResolution.Width;    // width
             int h = (int)camera.PreviewResolution.Height;   // height
             int w2 = w / 2;     // half the image width
@@ -47,31 +50,15 @@ namespace ReadForBlind.Views
                 {
                     pauseFramesEvent.WaitOne();
                     phCam.GetPreviewBufferArgb32(ARGBPx);
-                    Deployment.Current.Dispatcher.BeginInvoke(delegate()
-                    {
-                        // REsize for performance gain
-                        ARGBPx.CopyTo(wb.Pixels, 0);
-                        wbl = wb.Resize(w2, h2, WriteableBitmapExtensions.Interpolation.Bilinear);
-                    });
-                    // Get skew angle
-                    Utils.Deskew d = new Utils.Deskew(wbl);
-                    double skewAngle = -1 * d.GetSkewAngle();
-                    Deployment.Current.Dispatcher.BeginInvoke(delegate()
-                    {
-                        // Deskew
-                        wbl = wbl.RotateFree(skewAngle);
-                    });
-                    wbl.Pixels.CopyTo(ARGBPl, 0);   // copy resized image pixels to array for further process in other thread
-                    //ARGBPl = UtilsArray.GrayScale(ARGBPl);
-                    ARGBPl = UtilsArray.Binarize(ARGBPl, 51);   // try & error with threashold value
-                    ARGBPl = UtilsArray.Bitwise_not(ARGBPl);    // BUGGY - Makes the image disappear
-                    ARGBPl = UtilsArray.Erode(ARGBPl, w2, h2);  // Erode the image
+                    ARGBPx = utils.Binarize(ARGBPx, 51);   // try & error with threashold value
+                    //ARGBPx = utils.Bitwise_not(ARGBPx);   // STILL BUGGY - Makes the Image disappear
+                    Utils.Boundaries b = utils.CheckBoundaries(ARGBPx);
+                    await ImageHandler(b);
                     pauseFramesEvent.Reset();
                     Deployment.Current.Dispatcher.BeginInvoke(delegate()
                     {
-                        // Copy back to lower resolution bitmapimage
-                        ARGBPl.CopyTo(wbl.Pixels, 0);
-                        wbl.Invalidate();
+                        ARGBPx.CopyTo(wb.Pixels, 0);
+                        wb.Invalidate();
                         // TODO: identify if the image is complete, 
                         // IF yes, capture => stop this thread => crop the text area => send to hawaii => hope for best results
                         // else, continue
@@ -86,6 +73,29 @@ namespace ReadForBlind.Views
                     // Display error message.
                     txtmsg.Text = e.Message;
                 });
+            }
+        }
+
+        private async Task ImageHandler(Utils.Boundaries b)
+        {
+            if (b.Left || b.Right || b.Top || b.Bottom)
+            {
+                if (b.Left && !b.Right && !b.Top && !b.Bottom)
+                    await reader.readText("Move to the left");
+                else if (b.Right && !b.Left && !b.Top && !b.Bottom)
+                    await reader.readText("Move to the right");
+                else if (b.Top && !b.Left && !b.Right && !b.Bottom)
+                    await reader.readText("Move to the top");
+                else if (b.Bottom && !b.Left && !b.Top && !b.Right)
+                    await reader.readText("Move to the bottom");
+                else
+                    await reader.readText("Move upwards");
+            }
+            else
+            {
+                await reader.readText("Please don't move the phone, let me click");
+                camera.CaptureImage();
+                pumpARGBFrames = false;
             }
         }
 
@@ -108,14 +118,17 @@ namespace ReadForBlind.Views
 
         private void cameraInitialized(object sender, CameraOperationCompletedEventArgs e)
         {
-            Dispatcher.BeginInvoke(delegate() {
+            Dispatcher.BeginInvoke(delegate()
+            {
                 imageProcessing = new Thread(Process);
                 pumpARGBFrames = true;
-                wb = new WriteableBitmap((int)camera.PreviewResolution.Width, (int)camera.PreviewResolution.Height);
-                wbl = new WriteableBitmap(320, 240);
+                int w = (int)camera.PreviewResolution.Width;
+                int h = (int)camera.PreviewResolution.Height;
+                wb = new WriteableBitmap(w, h);
+                utils = new Utils(w, h);
                 img.Source = wb;
                 imageProcessing.Start();
-                txtmsg.Text = "width = " + camera.PreviewResolution.Width.ToString() + " height = " + camera.PreviewResolution.Height.ToString();
+                txtmsg.Text = "width = " + w.ToString() + " height = " + h.ToString();
             });
         }
 
@@ -164,6 +177,7 @@ namespace ReadForBlind.Views
             if (camera != null)
             {
                 pumpARGBFrames = false;
+                imageProcessing.Abort();
                 camera.Dispose();
                 camera.Initialized -= cameraInitialized;
                 camera.CaptureCompleted -= captureCompleted;
