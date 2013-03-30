@@ -28,8 +28,8 @@ namespace ReadForBlind.Views
             bmp_raw = new BitmapImage();
 
             //CONNECT: remove the below comment to make it work with the camera class & comment the line below it
-            //bmp_raw = (BitmapImage)PhoneApplicationService.Current.State["image"];
-            bmp_raw = new BitmapImage(new Uri("/images/m20.jpg", UriKind.Relative));
+            bmp_raw = (BitmapImage)PhoneApplicationService.Current.State["image"];
+            //bmp_raw = new BitmapImage(new Uri("/images/m20.jpg", UriKind.Relative));
             bmp_raw.CreateOptions = BitmapCreateOptions.None;       // makes the image creating instantaneous
             bmp_raw.ImageOpened += bmp_raw_ImageOpened;
             
@@ -40,8 +40,11 @@ namespace ReadForBlind.Views
         private void bmp_raw_ImageOpened(object sender, RoutedEventArgs e)
         {
             // set the image that we got from camera to the bg of loadingpage
-            bg.ImageSource = bmp_raw;
-            utils = new Utils(bmp_raw.PixelWidth, bmp_raw.PixelHeight);
+            bmp = new WriteableBitmap(bmp_raw);
+            bmp = bmp.Rotate(90);
+            bg.ImageSource = bmp;
+            utils = new Utils(bmp.PixelWidth, bmp.PixelHeight);
+            StartOcr();     // Initiates the OCR process
         }
 
         private void StartOcr()
@@ -99,8 +102,7 @@ namespace ReadForBlind.Views
 
         private void PageLoaded(object sender, RoutedEventArgs e)
         {
-            bmp = new WriteableBitmap(bmp_raw);
-            StartOcr();     // Initiates the OCR process
+           // nothig
         }
 
         // this button is just to check if the UI thread is not blocked while OCR is running in the bg

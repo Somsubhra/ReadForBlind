@@ -12,6 +12,8 @@ using Microsoft.Xna.Framework.Media;
 using System.Windows.Media.Imaging;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Devices.Sensors;
+using System.IO;
 
 namespace ReadForBlind.Views
 {
@@ -22,16 +24,46 @@ namespace ReadForBlind.Views
         private Thread imageProcessing;
         private Reader reader;
         private Listener listener;
-        private static bool pumpARGBFrames;
+        private static bool pumpARGBFrames, isStable = false;
         private static ManualResetEvent pauseFramesEvent = new ManualResetEvent(true);
         private WriteableBitmap wb;   // wb for original image
         private Utils utils;
+        private static Accelerometer acc;
+        private double oldx, oldy, oldz;
 
         public Camera()
         {
             InitializeComponent();
             reader = new Reader();
             listener = new Listener();
+            acc = new Accelerometer();
+            try
+            {
+                acc.Start();
+                acc.CurrentValueChanged += acc_CurrentValueChanged;
+                oldy = acc.CurrentValue.Acceleration.Y;
+                oldx = acc.CurrentValue.Acceleration.X;
+                oldz = acc.CurrentValue.Acceleration.Z;
+            }
+            catch (AccelerometerFailedException) { }
+        }
+
+        private async void acc_CurrentValueChanged(object sender, SensorReadingEventArgs<AccelerometerReading> e)
+        {
+            if (!pumpARGBFrames)
+            {
+                acc.Stop();
+                return;
+            }
+            if (Math.Abs((double)(oldx - acc.CurrentValue.Acceleration.X)) > 0.20 || Math.Abs((double)(oldy - acc.CurrentValue.Acceleration.Y)) > 0.20)
+            {
+                await reader.readText(" stabalize ");
+                isStable = false;
+            }
+            else
+            {
+                isStable = true;
+            }
         }
 
         private async void Process()
@@ -41,7 +73,6 @@ namespace ReadForBlind.Views
             int w2 = w / 2;     // half the image width
             int h2 = h / 2;     // half the image height
             int[] ARGBPx = new int[w * h];      // original pixels
-            int[] ARGBPl = new int[320 * 240];  // lower resolution pixels
 
             try
             {
@@ -52,8 +83,9 @@ namespace ReadForBlind.Views
                     phCam.GetPreviewBufferArgb32(ARGBPx);
                     ARGBPx = utils.Binarize(ARGBPx, 51);   // try & error with threashold value
                     //ARGBPx = utils.Bitwise_not(ARGBPx);   // STILL BUGGY - Makes the Image disappear
+                    ARGBPx = utils.Erode(ARGBPx);
                     Utils.Boundaries b = utils.CheckBoundaries(ARGBPx);
-                    await ImageHandler(b);
+                    await ImageHandler(b);      // This may create a lag // BEAWARE
                     pauseFramesEvent.Reset();
                     Deployment.Current.Dispatcher.BeginInvoke(delegate()
                     {
@@ -71,7 +103,8 @@ namespace ReadForBlind.Views
                 Dispatcher.BeginInvoke(delegate()
                 {
                     // Display error message.
-                    txtmsg.Text = e.Message;
+                    //txtmsg.Text = e.Message;
+                    //reader.readText(e.Message);
                 });
             }
         }
@@ -80,22 +113,33 @@ namespace ReadForBlind.Views
         {
             if (b.Left || b.Right || b.Top || b.Bottom)
             {
-                if (b.Left && !b.Right && !b.Top && !b.Bottom)
-                    await reader.readText("Move to the left");
-                else if (b.Right && !b.Left && !b.Top && !b.Bottom)
-                    await reader.readText("Move to the right");
-                else if (b.Top && !b.Left && !b.Right && !b.Bottom)
-                    await reader.readText("Move to the top");
-                else if (b.Bottom && !b.Left && !b.Top && !b.Right)
-                    await reader.readText("Move to the bottom");
-                else
-                    await reader.readText("Move upwards");
+                //if (b.Left && !b.Right && !b.Top && !b.Bottom)
+                //    await reader.readText("Move to the left");
+                //else if (b.Right && !b.Left && !b.Top && !b.Bottom)
+                //    await reader.readText("Move to the right");
+                //else if (b.Top && !b.Left && !b.Right && !b.Bottom)
+                //    await reader.readText("Move to the top");
+                //else if (b.Bottom && !b.Left && !b.Top && !b.Right)
+                //    await reader.readText("Move to the bottom");
+                //else
+                //    await reader.readText("Move upwards");
+                if (b.Right)
+                    await reader.readText(" right ");
+                if (b.Left)
+                    await reader.readText(" left ");
+                if (b.Top)
+                    await reader.readText(" top ");
+                if (b.Bottom)
+                    await reader.readText(" bottom ");
             }
             else
             {
                 await reader.readText("Please don't move the phone, let me click");
-                camera.CaptureImage();
-                pumpARGBFrames = false;
+                if (isStable)
+                {
+                    camera.Focus();
+                    pumpARGBFrames = false;
+                }
             }
         }
 
@@ -104,16 +148,21 @@ namespace ReadForBlind.Views
             if ((PhotoCamera.IsCameraTypeSupported(CameraType.Primary) == true))
             {
                 camera = new PhotoCamera(CameraType.Primary);
-                this.setAutoFlash();
-                camera.Initialized += new EventHandler<CameraOperationCompletedEventArgs>(cameraInitialized);
-                camera.CaptureCompleted += new EventHandler<CameraOperationCompletedEventArgs>(captureCompleted);
-                camera.CaptureImageAvailable += new EventHandler<ContentReadyEventArgs>(captureImageAvailable);
+                camera.Initialized += cameraInitialized;
+                camera.CaptureCompleted += captureCompleted;
+                camera.CaptureImageAvailable += captureImageAvailable;
+                camera.AutoFocusCompleted += cam_AutoFocusCompleted;
                 viewfinderBrush.SetSource(camera);
             }
             else
             {
                 reader.readText("Sorry, but I can't find a working camera on this device");
             }
+        }
+
+        private void cam_AutoFocusCompleted(object sender, CameraOperationCompletedEventArgs e)
+        {
+            camera.CaptureImage();
         }
 
         private void cameraInitialized(object sender, CameraOperationCompletedEventArgs e)
@@ -129,6 +178,7 @@ namespace ReadForBlind.Views
                 img.Source = wb;
                 imageProcessing.Start();
                 txtmsg.Text = "width = " + w.ToString() + " height = " + h.ToString();
+                setAutoFlash();
             });
         }
 
@@ -148,6 +198,13 @@ namespace ReadForBlind.Views
                 BitmapImage bmpImage = new BitmapImage();
                 bmpImage.CreateOptions = BitmapCreateOptions.None;
                 bmpImage.SetSource(e.ImageStream);
+                WriteableBitmap wb = new WriteableBitmap(bmpImage);
+                Utils.resizeImage(ref wb);
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    wb.SaveJpeg(ms, (int)wb.PixelWidth, (int)wb.PixelHeight, 0, 100);
+                    bmpImage.SetSource(ms);
+                }
                 PhoneApplicationService.Current.State["image"] = bmpImage;
                 NavigationService.Navigate(new Uri("/Views/LoadingPage.xaml", UriKind.Relative));
             });
@@ -159,7 +216,7 @@ namespace ReadForBlind.Views
             {
                 try
                 {
-                    camera.CaptureImage();
+                    camera.Focus();
                 }
 
                 catch (Exception ex)
@@ -177,7 +234,9 @@ namespace ReadForBlind.Views
             if (camera != null)
             {
                 pumpARGBFrames = false;
+                acc.Stop();
                 imageProcessing.Abort();
+                reader = null;
                 camera.Dispose();
                 camera.Initialized -= cameraInitialized;
                 camera.CaptureCompleted -= captureCompleted;

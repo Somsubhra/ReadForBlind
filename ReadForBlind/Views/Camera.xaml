@@ -9,7 +9,7 @@
     FontFamily="{StaticResource PhoneFontFamilyNormal}"
     FontSize="{StaticResource PhoneFontSizeNormal}"
     Foreground="{StaticResource PhoneForegroundBrush}"
-    SupportedOrientations="Landscape" Orientation="Landscape"
+    SupportedOrientations="Portrait" Orientation="Portrait"
     mc:Ignorable="d"
     shell:SystemTray.IsVisible="True" Hold="OpenVoiceCommand">
 
@@ -21,10 +21,16 @@
 
         <Canvas x:Name="cameraCanvas" HorizontalAlignment="Stretch" Tap="cameraCanvasTapped">
             <Canvas.Background>
-                <VideoBrush x:Name="viewfinderBrush" />
+                <VideoBrush x:Name="viewfinderBrush" >
+                    <VideoBrush.RelativeTransform>
+                        <CompositeTransform x:Name="previewTransform"
+                            CenterX=".5"
+                            CenterY=".5" />
+                    </VideoBrush.RelativeTransform>
+                </VideoBrush>
             </Canvas.Background>
-            <TextBlock x:Name="txtmsg" Canvas.Left="56" TextWrapping="Wrap" Text="TextBlock" Canvas.Top="443"/>
-            <Image x:Name="img" Height="180" Canvas.Left="468" Canvas.Top="290" Width="250"/>
+            <TextBlock x:Name="txtmsg" Canvas.Left="10" TextWrapping="Wrap" Text="TextBlock" Canvas.Top="10"/>
+            <Image x:Name="img" Height="180" Canvas.Left="220" Canvas.Top="578" Width="250"/>
         </Canvas>
     </Grid>
 
