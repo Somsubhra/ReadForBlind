@@ -12,6 +12,7 @@ using Microsoft.Xna.Framework.Media;
 using System.Windows.Media.Imaging;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 using Microsoft.Devices.Sensors;
 using System.IO;
 
@@ -120,16 +121,6 @@ namespace ReadForBlind.Views
         {
             if (b.Left || b.Right || b.Top || b.Bottom)
             {
-                //if (b.Left && !b.Right && !b.Top && !b.Bottom)
-                //    await reader.readText("Move to the left");
-                //else if (b.Right && !b.Left && !b.Top && !b.Bottom)
-                //    await reader.readText("Move to the right");
-                //else if (b.Top && !b.Left && !b.Right && !b.Bottom)
-                //    await reader.readText("Move to the top");
-                //else if (b.Bottom && !b.Left && !b.Top && !b.Right)
-                //    await reader.readText("Move to the bottom");
-                //else
-                //    await reader.readText("Move upwards");
                 String s = "";
                 int i = 0;
                 if (b.Right)
@@ -190,6 +181,7 @@ namespace ReadForBlind.Views
                 camera.AutoFocusCompleted += cam_AutoFocusCompleted;
                 viewfinderBrush.SetSource(camera);
                 previewTransform.Rotation = camera.Orientation;
+                reader.readText("Lift the phone");
             }
             else
             {
@@ -206,17 +198,27 @@ namespace ReadForBlind.Views
         {
             Dispatcher.BeginInvoke(delegate()
             {
-                imageProcessing = new Thread(Process);
+                DispatcherTimer dt = new DispatcherTimer();
+                dt.Interval = new TimeSpan(0, 0, 0, 0, 600);
+                dt.Tick += dt_Tick;
+                
                 pumpARGBFrames = true;
                 int w = (int)camera.PreviewResolution.Width;
                 int h = (int)camera.PreviewResolution.Height;
                 wb = new WriteableBitmap(w, h);
                 utils = new Utils(w, h);
                 img.Source = wb;
-                imageProcessing.Start();
+                
                 txtmsg.Text = "width = " + w.ToString() + " height = " + h.ToString();
                 setAutoFlash();
+                dt.Start();
             });
+        }
+
+        private void dt_Tick(object sender, EventArgs e)
+        {
+            imageProcessing = new Thread(Process);
+            imageProcessing.Start();
         }
 
         private void captureCompleted(object sender, CameraOperationCompletedEventArgs e)
