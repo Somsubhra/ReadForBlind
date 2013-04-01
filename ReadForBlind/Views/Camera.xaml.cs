@@ -153,6 +153,7 @@ namespace ReadForBlind.Views
                 camera.CaptureImageAvailable += captureImageAvailable;
                 camera.AutoFocusCompleted += cam_AutoFocusCompleted;
                 viewfinderBrush.SetSource(camera);
+                previewTransform.Rotation = camera.Orientation;
             }
             else
             {
