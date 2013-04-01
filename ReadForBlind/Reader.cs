@@ -26,5 +26,9 @@ namespace ReadForBlind
             string welcomeText = "Welcome. You may now hold your phone over the text for me to reader it aloud.";
             readText(welcomeText);
         }
+
+        public void Dispose() {
+            reader.Dispose();
+        }
     }
 }

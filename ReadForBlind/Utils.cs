@@ -191,33 +191,24 @@ namespace ReadForBlind
             }
             else
             {
-                int col, row;
-                try
-                {
-                    for (col = 0; col < this.width / 2; col++)
-                    {
-                        intensity = 0;
-                        for (row = 0; row < this.height; row++)
-                        {
-                            int color = GetPixel(bmp, row, col);
-                            Color c = DecodeColor(color);
-                            intensity += (int)(c.R + c.G + c.B) / 3;
-                            //color = GetPixel(bmp, row, col + 1);
-                            //c = DecodeColor(color);
-                            //intensity += (int)(c.R + c.G + c.B) / 3;
-                        }
-                        intensity /= (this.height);
-                        if (intensity < offset)
-                            return false;
-                    }
-                    return true;
-                }
-                catch (Exception)
-                {
-
-                    throw;
-                }
-
+                //int col, row;
+                //for (col = 0; col < this.width / 2; col++)
+                //{
+                //    intensity = 0;
+                //    for (row = 0; row < this.height; row++)
+                //    {
+                //        int color = GetPixel(bmp, row, col);
+                //        Color c = DecodeColor(color);
+                //        intensity += (int)(c.R + c.G + c.B) / 3;
+                //        //color = GetPixel(bmp, row, col + 1);
+                //        //c = DecodeColor(color);
+                //        //intensity += (int)(c.R + c.G + c.B) / 3;
+                //    }
+                //    intensity /= (this.height);
+                //    if (intensity < offset)
+                //        return false;
+                //}
+                return true;
             }
         }
 
@@ -239,33 +230,24 @@ namespace ReadForBlind
             }
             else
             {
-                int col, row;
-                try
-                {
-                    for (col = 1; col < this.width / 2; col++)
-                    {
-                        intensity = 0;
-                        for (row = 0; row < this.height; row++)
-                        {
-                            int color = GetPixel(bmp, row, this.width - col - 1);
-                            Color c = DecodeColor(color);
-                            intensity += (int)(c.R + c.G + c.B) / 3;
-                            //color = GetPixel(bmp, row, this.width - col);
-                            //c = DecodeColor(color);
-                            //intensity += (int)(c.R + c.G + c.B) / 3;
-                        }
-                        intensity /= (this.height);
-                        if (intensity < offset)
-                            return false;
-                    }
-                    return true;
-                }
-                catch (Exception)
-                {
-
-                    throw;
-                }
-
+                //int col, row;
+                //    for (col = 1; col < this.width / 2; col++)
+                //    {
+                //        intensity = 0;
+                //        for (row = 0; row < this.height; row++)
+                //        {
+                //            int color = GetPixel(bmp, row, this.width - col - 1);
+                //            Color c = DecodeColor(color);
+                //            intensity += (int)(c.R + c.G + c.B) / 3;
+                //            //color = GetPixel(bmp, row, this.width - col);
+                //            //c = DecodeColor(color);
+                //            //intensity += (int)(c.R + c.G + c.B) / 3;
+                //        }
+                //        intensity /= (this.height);
+                //        if (intensity < offset)
+                //            return false;
+                //    }
+                return true;
             }
         }
 

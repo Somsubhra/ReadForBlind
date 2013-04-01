@@ -30,6 +30,7 @@ namespace ReadForBlind.Views
         private Utils utils;
         private static Accelerometer acc;
         private double oldx, oldy, oldz;
+        private static BitmapImage bmpimg;
 
         public Camera()
         {
@@ -73,19 +74,24 @@ namespace ReadForBlind.Views
             int w2 = w / 2;     // half the image width
             int h2 = h / 2;     // half the image height
             int[] ARGBPx = new int[w * h];      // original pixels
-
+            int skipframe = 0;
             try
             {
+                
                 PhotoCamera phCam = (PhotoCamera)camera;
                 while (pumpARGBFrames)
                 {
                     pauseFramesEvent.WaitOne();
                     phCam.GetPreviewBufferArgb32(ARGBPx);
-                    ARGBPx = utils.Binarize(ARGBPx, 51);   // try & error with threashold value
+                    ARGBPx = utils.Binarize(ARGBPx, 140);   // try & error with threashold value
                     //ARGBPx = utils.Bitwise_not(ARGBPx);   // STILL BUGGY - Makes the Image disappear
                     ARGBPx = utils.Erode(ARGBPx);
                     Utils.Boundaries b = utils.CheckBoundaries(ARGBPx);
-                    await ImageHandler(b);      // This may create a lag // BEAWARE
+                    skipframe++;
+                    if(skipframe == 4){
+                        ImageHandler(b);      // This may create a lag // BEAWARE
+                        skipframe = 0;
+                    }
                     pauseFramesEvent.Reset();
                     Deployment.Current.Dispatcher.BeginInvoke(delegate()
                     {
@@ -110,6 +116,7 @@ namespace ReadForBlind.Views
         }
 
         private async Task ImageHandler(Utils.Boundaries b)
+        //private void ImageHandler(Utils.Boundaries b)
         {
             if (b.Left || b.Right || b.Top || b.Bottom)
             {
@@ -123,23 +130,52 @@ namespace ReadForBlind.Views
                 //    await reader.readText("Move to the bottom");
                 //else
                 //    await reader.readText("Move upwards");
+                String s = "";
+                int i = 0;
                 if (b.Right)
-                    await reader.readText(" right ");
+                {
+                    s += " right ";
+                    i++;
+                    //await reader.readText(" right ");
+                }
                 if (b.Left)
-                    await reader.readText(" left ");
+                {
+                    s += " left ";
+                    i++;
+                    //await reader.readText(" left ");
+                }
                 if (b.Top)
-                    await reader.readText(" top ");
+                {
+                    s += " top ";
+                    i++;
+                    //await reader.readText(" top ");
+                }
                 if (b.Bottom)
-                    await reader.readText(" bottom ");
+                {
+                    s += " bottom ";
+                    i++;
+                    //await reader.readText(" bottom ");
+                }
+                if (i > 2)
+                    s = " up ";
+                Dispatcher.BeginInvoke(delegate() {
+                    txtmsg.Text = s;
+                });
+                reader.readText(s);
             }
             else
             {
-                await reader.readText("Please don't move the phone, let me click");
-                if (isStable)
+                Dispatcher.BeginInvoke(delegate()
                 {
+                    txtmsg.Text = "Please don't move the phone, let me click";
+                });
+                await reader.readText("Please don't move the phone, let me click");
+                //if (isStable)
+                //{
                     camera.Focus();
                     pumpARGBFrames = false;
-                }
+                    reader.Dispose();
+                //}
             }
         }
 
@@ -188,7 +224,10 @@ namespace ReadForBlind.Views
             Dispatcher.BeginInvoke(delegate()
             {
                 txtmsg.Text = "Image captured";
+                PhoneApplicationService.Current.State["image"] = bmpimg;
+                NavigationService.Navigate(new Uri("/Views/LoadingPage.xaml", UriKind.Relative));
             });
+            
         }
 
         private void captureImageAvailable(object sender, ContentReadyEventArgs e)
@@ -196,18 +235,18 @@ namespace ReadForBlind.Views
             Dispatcher.BeginInvoke(delegate()
             {
                 txtmsg.Text = "Image Available";
-                BitmapImage bmpImage = new BitmapImage();
-                bmpImage.CreateOptions = BitmapCreateOptions.None;
-                bmpImage.SetSource(e.ImageStream);
-                WriteableBitmap wb = new WriteableBitmap(bmpImage);
+                bmpimg = new BitmapImage();
+                bmpimg.CreateOptions = BitmapCreateOptions.None;
+                bmpimg.SetSource(e.ImageStream);
+                WriteableBitmap wb = new WriteableBitmap(bmpimg);
                 Utils.resizeImage(ref wb);
                 using (MemoryStream ms = new MemoryStream())
                 {
                     wb.SaveJpeg(ms, (int)wb.PixelWidth, (int)wb.PixelHeight, 0, 100);
-                    bmpImage.SetSource(ms);
+                    bmpimg.SetSource(ms);
                 }
-                PhoneApplicationService.Current.State["image"] = bmpImage;
-                NavigationService.Navigate(new Uri("/Views/LoadingPage.xaml", UriKind.Relative));
+                //PhoneApplicationService.Current.State["image"] = bmpimg;
+                //NavigationService.Navigate(new Uri("/Views/LoadingPage.xaml", UriKind.Relative));
             });
         }
 

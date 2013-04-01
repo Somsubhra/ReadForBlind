@@ -40,7 +40,7 @@ namespace ReadForBlind
         {
             playSound();
             SpeechRecognitionResult result = await listener.RecognizeAsync();
-            if (result.TextConfidence == SpeechRecognitionConfidence.High && result.Text.Length > 0)
+            if (result.TextConfidence >= SpeechRecognitionConfidence.Medium && result.Text.Length > 0)
                 return IsBuiltIn(result.Text);
             else
                 await reader.readText("Sorry but I didn't get you");

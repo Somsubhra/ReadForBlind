@@ -26,17 +26,24 @@ namespace ReadForBlind.Views
         {
             InitializeComponent();
             bmp_raw = new BitmapImage();
+            bmp_raw.CreateOptions = BitmapCreateOptions.None;       // makes the image creating instantaneous
+            bmp_raw.ImageOpened += bmp_raw_ImageOpened;
 
             //CONNECT: remove the below comment to make it work with the camera class & comment the line below it
             bmp_raw = (BitmapImage)PhoneApplicationService.Current.State["image"];
-            //bmp_raw = new BitmapImage(new Uri("/images/m20.jpg", UriKind.Relative));
-            bmp_raw.CreateOptions = BitmapCreateOptions.None;       // makes the image creating instantaneous
-            bmp_raw.ImageOpened += bmp_raw_ImageOpened;
+            //bmp_raw = new BitmapImage(new Uri("/images/helloworld.jpg", UriKind.Relative));
+            
             
             reader = new Reader();
             listener = new Listener();
+            bmp = new WriteableBitmap(bmp_raw);
+            bmp = bmp.Rotate(90);
+            bg.ImageSource = bmp;
+            utils = new Utils(bmp.PixelWidth, bmp.PixelHeight);
+            StartOcr();     // Initiates the OCR process
         }
 
+        // never called
         private void bmp_raw_ImageOpened(object sender, RoutedEventArgs e)
         {
             // set the image that we got from camera to the bg of loadingpage
