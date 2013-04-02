@@ -137,7 +137,8 @@ namespace ReadForBlind
             {
                 // Calculate for the illumination.
                 // I =(int)(0.109375*R + 0.59375*G + 0.296875*B + 0.5)
-                int i = (7 * r + 38 * g + 19 * b + 32) >> 6;
+                //int i = (7 * r + 38 * g + 19 * b + 32) >> 6;
+                int i = ((r + g + b) / 3) >> 6;
 
                 gray = ((a & 0xFF) << 24) | ((i & 0xFF) << 16) | ((i & 0xFF) << 8) | (i & 0xFF);
             }

@@ -32,6 +32,8 @@ namespace ReadForBlind.Views
         private static Accelerometer acc;
         private double oldx, oldy, oldz;
         private static BitmapImage bmpimg;
+        private MediaLibrary ml;
+        private static int fli = 0;
 
         public Camera()
         {
@@ -39,6 +41,7 @@ namespace ReadForBlind.Views
             reader = new Reader();
             listener = new Listener();
             acc = new Accelerometer();
+            ml = new MediaLibrary();
             try
             {
                 acc.Start();
@@ -163,7 +166,7 @@ namespace ReadForBlind.Views
                 await reader.readText("Please don't move the phone, let me click");
                 //if (isStable)
                 //{
-                    camera.Focus();
+                    //camera.Focus();
                     pumpARGBFrames = false;
                     reader.Dispose();
                 //}
@@ -210,8 +213,8 @@ namespace ReadForBlind.Views
                 img.Source = wb;
                 
                 txtmsg.Text = "width = " + w.ToString() + " height = " + h.ToString();
-                setAutoFlash();
-                dt.Start();
+                //setAutoFlash();
+                //dt.Start();
             });
         }
 
@@ -226,20 +229,25 @@ namespace ReadForBlind.Views
             Dispatcher.BeginInvoke(delegate()
             {
                 txtmsg.Text = "Image captured";
-                PhoneApplicationService.Current.State["image"] = bmpimg;
-                NavigationService.Navigate(new Uri("/Views/LoadingPage.xaml", UriKind.Relative));
+                //PhoneApplicationService.Current.State["image"] = bmpimg;
+                //NavigationService.Navigate(new Uri("/Views/LoadingPage.xaml", UriKind.Relative));
             });
             
         }
 
         private void captureImageAvailable(object sender, ContentReadyEventArgs e)
         {
+            String fl = "image_" + fli.ToString() + ".jpg";
+            fli++;
             Dispatcher.BeginInvoke(delegate()
             {
                 txtmsg.Text = "Image Available";
                 bmpimg = new BitmapImage();
                 bmpimg.CreateOptions = BitmapCreateOptions.None;
                 bmpimg.SetSource(e.ImageStream);
+                
+                
+                
                 WriteableBitmap wb = new WriteableBitmap(bmpimg);
                 Utils.resizeImage(ref wb);
                 using (MemoryStream ms = new MemoryStream())
@@ -250,6 +258,7 @@ namespace ReadForBlind.Views
                 //PhoneApplicationService.Current.State["image"] = bmpimg;
                 //NavigationService.Navigate(new Uri("/Views/LoadingPage.xaml", UriKind.Relative));
             });
+            ml.SavePictureToCameraRoll(fl, e.ImageStream);
         }
 
         private void cameraCanvasTapped(object sender, System.Windows.Input.GestureEventArgs e)
@@ -258,7 +267,8 @@ namespace ReadForBlind.Views
             {
                 try
                 {
-                    camera.Focus();
+                    //camera.Focus();
+                    camera.CaptureImage();
                 }
 
                 catch (Exception ex)
