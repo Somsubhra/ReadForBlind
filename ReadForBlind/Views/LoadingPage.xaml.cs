@@ -76,7 +76,7 @@ namespace ReadForBlind.Views
             bg.ImageSource = bmp;
             bmp = bmp.Rotate(1);
             byte[] photoBuffer = Utils.imageToByte(bmp);
-            ml.SavePictureToCameraRoll("filename.jpg", photoBuffer);
+            //ml.SavePictureToCameraRoll("filename.jpg", photoBuffer);
             OcrService.RecognizeImageAsync(Utils.HawaiiApplicationId, photoBuffer, (output) =>
             {
                 Dispatcher.BeginInvoke(() => OnOcrComplete(output));
