@@ -32,6 +32,7 @@ namespace ReadForBlind.Views
         private static Accelerometer acc;
         private double oldx, oldy, oldz;
         private static BitmapImage bmpimg;
+        private DispatcherTimer dt;
 
         public Camera()
         {
@@ -76,6 +77,8 @@ namespace ReadForBlind.Views
             int h2 = h / 2;     // half the image height
             int[] ARGBPx = new int[w * h];      // original pixels
             int skipframe = 0;
+            
+            //dt.Start();
             try
             {
                 
@@ -84,12 +87,13 @@ namespace ReadForBlind.Views
                 {
                     pauseFramesEvent.WaitOne();
                     phCam.GetPreviewBufferArgb32(ARGBPx);
+                    //int th = utils.GetThreshold(ARGBPx);
                     ARGBPx = utils.Binarize(ARGBPx, 140);   // try & error with threashold value
                     //ARGBPx = utils.Bitwise_not(ARGBPx);   // STILL BUGGY - Makes the Image disappear
                     ARGBPx = utils.Erode(ARGBPx);
                     Utils.Boundaries b = utils.CheckBoundaries(ARGBPx);
                     skipframe++;
-                    if(skipframe == 4){
+                    if(skipframe == 5){
                         ImageHandler(b);      // This may create a lag // BEAWARE
                         skipframe = 0;
                     }
@@ -111,7 +115,7 @@ namespace ReadForBlind.Views
                 {
                     // Display error message.
                     //txtmsg.Text = e.Message;
-                    //reader.readText(e.Message);
+                    reader.readText(e.Message);
                 });
             }
         }
@@ -160,7 +164,7 @@ namespace ReadForBlind.Views
                 {
                     txtmsg.Text = "Please don't move the phone, let me click";
                 });
-                await reader.readText("Please don't move the phone, let me click");
+                reader.readText("Please don't move the phone, let me click");
                 //if (isStable)
                 //{
                     camera.Focus();
@@ -168,6 +172,14 @@ namespace ReadForBlind.Views
                     reader.Dispose();
                 //}
             }
+        }
+
+        private void readUpperTExt() {
+            String s = "";
+            Dispatcher.BeginInvoke(delegate() { 
+                s = txtmsg.Text;
+            });
+            reader.readText(s);
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -181,7 +193,6 @@ namespace ReadForBlind.Views
                 camera.AutoFocusCompleted += cam_AutoFocusCompleted;
                 viewfinderBrush.SetSource(camera);
                 previewTransform.Rotation = camera.Orientation;
-                reader.readText("Lift the phone");
             }
             else
             {
@@ -198,8 +209,8 @@ namespace ReadForBlind.Views
         {
             Dispatcher.BeginInvoke(delegate()
             {
-                DispatcherTimer dt = new DispatcherTimer();
-                dt.Interval = new TimeSpan(0, 0, 0, 0, 600);
+                dt = new DispatcherTimer();
+                dt.Interval = new TimeSpan(0, 0, 2);
                 dt.Tick += dt_Tick;
                 
                 pumpARGBFrames = true;
@@ -211,14 +222,23 @@ namespace ReadForBlind.Views
                 
                 txtmsg.Text = "width = " + w.ToString() + " height = " + h.ToString();
                 setAutoFlash();
-                dt.Start();
+                //dt.Start();
             });
+            imageProcessing = new Thread(Process);
+            imageProcessing.Start();
         }
 
         private void dt_Tick(object sender, EventArgs e)
         {
-            imageProcessing = new Thread(Process);
-            imageProcessing.Start();
+            String s = "";
+            Dispatcher.BeginInvoke(delegate()
+            {
+                s = txtmsg.Text;
+            });
+            reader.readText(s);
+            //readUpperTExt();
+            //imageProcessing = new Thread(Process);
+            //imageProcessing.Start();
         }
 
         private void captureCompleted(object sender, CameraOperationCompletedEventArgs e)
@@ -241,7 +261,7 @@ namespace ReadForBlind.Views
                 bmpimg.CreateOptions = BitmapCreateOptions.None;
                 bmpimg.SetSource(e.ImageStream);
                 WriteableBitmap wb = new WriteableBitmap(bmpimg);
-                Utils.resizeImage(ref wb);
+                //Utils.resizeImage(ref wb);
                 using (MemoryStream ms = new MemoryStream())
                 {
                     wb.SaveJpeg(ms, (int)wb.PixelWidth, (int)wb.PixelHeight, 0, 100);

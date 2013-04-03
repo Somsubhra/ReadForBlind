@@ -12,6 +12,7 @@
       <Capability Name="ID_CAP_SPEECH_RECOGNITION" />
       <Capability Name="ID_CAP_MICROPHONE" />
       <Capability Name="ID_CAP_ISV_CAMERA" />
+      <Capability Name="ID_CAP_MEDIALIB_PHOTO" />
     </Capabilities>
     <Tasks>
       <DefaultTask Name="_default" NavigationPage="Views\Camera.xaml" />
@@ -41,5 +42,8 @@
       <ScreenResolution Name="ID_RESOLUTION_WXGA" />
       <ScreenResolution Name="ID_RESOLUTION_HD720P" />
     </ScreenResolutions>
+    <Requirements>
+      <Requirement Name="ID_REQ_REARCAMERA" />
+    </Requirements>
   </App>
 </Deployment>

@@ -11,6 +11,7 @@ using System.Windows.Media.Imaging;
 using Microsoft.Hawaii;
 using Microsoft.Hawaii.Ocr.Client;
 using System.Text;
+using Microsoft.Xna.Framework.Media;
 
 namespace ReadForBlind.Views
 {
@@ -21,6 +22,7 @@ namespace ReadForBlind.Views
         private Reader reader;
         private Listener listener;
         private Utils utils;
+        private MediaLibrary ml;
 
         public LoadingPage()
         {
@@ -28,6 +30,7 @@ namespace ReadForBlind.Views
             bmp_raw = new BitmapImage();
             bmp_raw.CreateOptions = BitmapCreateOptions.None;       // makes the image creating instantaneous
             bmp_raw.ImageOpened += bmp_raw_ImageOpened;
+            ml = new MediaLibrary();
 
             //CONNECT: remove the below comment to make it work with the camera class & comment the line below it
             bmp_raw = (BitmapImage)PhoneApplicationService.Current.State["image"];
@@ -37,7 +40,7 @@ namespace ReadForBlind.Views
             reader = new Reader();
             listener = new Listener();
             bmp = new WriteableBitmap(bmp_raw);
-            bmp = bmp.Rotate(90);
+            //bmp = bmp.Rotate(90);
             bg.ImageSource = bmp;
             utils = new Utils(bmp.PixelWidth, bmp.PixelHeight);
             StartOcr();     // Initiates the OCR process
@@ -50,7 +53,9 @@ namespace ReadForBlind.Views
             bmp = new WriteableBitmap(bmp_raw);
             bmp = bmp.Rotate(90);
             bg.ImageSource = bmp;
+
             utils = new Utils(bmp.PixelWidth, bmp.PixelHeight);
+
             StartOcr();     // Initiates the OCR process
         }
 
@@ -59,12 +64,19 @@ namespace ReadForBlind.Views
             reader.readText("Image has been captured.");
             reader.readText("Please let me analyse it.");
 
-            utils.deskew(ref bmp);
+            //utils.deskew(ref bmp);
 
             if (bmp.PixelHeight > 640 || bmp.PixelWidth > 640)
                 Utils.resizeImage(ref bmp);
 
+            utils.height = bmp.PixelHeight;
+            utils.width = bmp.PixelWidth;
+            Rect r = utils.GetCropArea(bmp.Pixels);
+            bmp = bmp.Crop(r);
+            bg.ImageSource = bmp;
+            bmp = bmp.Rotate(1);
             byte[] photoBuffer = Utils.imageToByte(bmp);
+            ml.SavePictureToCameraRoll("filename.jpg", photoBuffer);
             OcrService.RecognizeImageAsync(Utils.HawaiiApplicationId, photoBuffer, (output) =>
             {
                 Dispatcher.BeginInvoke(() => OnOcrComplete(output));

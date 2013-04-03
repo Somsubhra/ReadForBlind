@@ -15,8 +15,9 @@ namespace ReadForBlind
 {
     public class Utils
     {
-        private int width, height, offset = 120, limit;
-
+        private int offset = 120, limit;
+        public int width { get; set; }
+        public int height { get; set; }
         /// <summary>
         /// The Hawaii Application Id.
         /// </summary>
@@ -142,6 +143,60 @@ namespace ReadForBlind
                 gray = ((a & 0xFF) << 24) | ((i & 0xFF) << 16) | ((i & 0xFF) << 8) | (i & 0xFF);
             }
             return gray;
+        }
+
+        enum State { 
+            Increasing,
+            Stable,
+            Decreasing
+        };
+
+        public int GetThreshold(int[] pixels)
+        {
+            int[] histo = new int[256];
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                Color c = DecodeColor(pixels[i]);
+                int inten = (int)((c.R + c.G + c.B) / 3);
+                histo[inten]++;
+            }
+            for (int i = 0; i < histo.Length; i++)
+            {
+                histo[i] = histo[i] / 1000;
+            }
+            List<KeyValuePair<int, int>> points = new List<KeyValuePair<int, int>>();
+            State stat = State.Stable;
+            int count = 0;
+            for (int i = 0; i < histo.Length - 1; i++)
+            {
+                if (histo[i] > histo[i + 1] && stat != State.Decreasing) {
+                    points.Add(new KeyValuePair<int, int>(i, histo[i]));
+                    stat = State.Decreasing;
+                }
+                else if (histo[i] < histo[i + 1] && stat != State.Increasing)
+                {
+                    points.Add(new KeyValuePair<int, int>(i, histo[i]));
+                    stat = State.Increasing;
+                }
+                else 
+                {
+                    stat = State.Stable;
+                }
+            }
+            int max = 0, min = 99999, max2 = 0;
+            int maxIndex = -1, minIndex = -1, max2Index = -1;
+            foreach (var item in points)
+            {
+                if (max < item.Value) 
+                {
+                    max2 = max;
+                    max2Index = maxIndex;
+                    max = item.Value;
+                    maxIndex = item.Key;
+                }
+            }
+            int th = max2Index + ((maxIndex + max2Index) / 2);
+            return th;
         }
 
         public Boundaries CheckBoundaries(int[] pixels)
@@ -279,6 +334,104 @@ namespace ReadForBlind
             if (intensity < offset)
                 return false;
             return true;
+        }
+
+        public Rect GetCropArea(int[] bmp) { 
+            int cutoff = 80;
+            double l = GetLeft(bmp,cutoff);
+            double r = GetRight(bmp, cutoff);
+            double b = GetBottom(bmp, cutoff);
+            double t = GetTop(bmp, cutoff);
+            Rect rec = new Rect(l, t, (r - l), (b - t));
+            return rec;
+        }
+
+        public int GetLeft(int[] bmp, int cutoff) 
+        {
+            for (int i = 0; i < this.width; i++)
+            {
+                int inten = 0;
+                for (int j = 0; j < this.height; j++)
+                {
+                    int p = GetPixel(bmp, j, i);
+                    Color r = DecodeColor(p);
+                    inten += (r.R + r.G + r.B) / 3;
+                }
+                inten /= this.height;
+                if (inten > cutoff)
+                    return i;
+            }
+            return -1;
+        }
+
+        //public int GetRight(int[] bmp, int cutoff) 
+        //{
+        //    for (int i = 0; i < this.width; i++)
+        //    {
+        //        int inten = 0;
+        //        for (int j = 0; j < this.height; j++)
+        //        {
+        //            int p = GetPixel(bmp, this.width - i -1, j);
+        //            Color c = DecodeColor(p);
+        //            inten += (c.R + c.G + c.B) / 3;
+        //        }
+        //        inten /= this.height;
+        //        if (inten > cutoff)
+        //            return (this.width - i);
+        //    }
+        //    return -1;
+        //}
+
+        public int GetRight(int[] bmp, int cutoff)
+        {
+            for (int i = this.width; i > 0; i--)
+            {
+                int inten = 0;
+                for (int j = 0; j < this.height; j++)
+                {
+                    int p = GetPixel(bmp, j , i-1);
+                    Color c = DecodeColor(p);
+                    inten += (c.R + c.G + c.B) / 3;
+                }
+                inten /= this.height;
+                if (inten > cutoff)
+                    return (i);
+            }
+            return -1;
+        }
+
+        public int GetTop(int[] bmp, int cutoff)
+        {
+            for (int i = 0; i < this.height; i++)
+            {
+                int inten = 0;
+                for (int j = 0; j < this.width; j++)
+                {
+                    Color c = DecodeColor(GetPixel(bmp, i, j));
+                    inten += (c.R + c.G + c.B) / 3;
+                }
+                inten /= this.width;
+                if (inten > cutoff)
+                    return i;
+            }
+            return -1;
+        }
+
+        public int GetBottom(int[] bmp, int cutoff)
+        {
+            for (int i = 0; i < this.height; i++)
+            {
+                int inten = 0;
+                for (int j = 0; j < this.width; j++)
+                {
+                    Color c = DecodeColor(GetPixel(bmp, this.height - i - 1, j));
+                    inten += (c.R + c.G + c.B) / 3;
+                }
+                inten /= this.width;
+                if (inten > cutoff)
+                    return (this.height - i) ;
+            }
+            return -1;
         }
 
         private int GetPixel(int[] pixels, int i, int j)
