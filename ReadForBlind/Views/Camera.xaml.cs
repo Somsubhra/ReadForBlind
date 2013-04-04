@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using Microsoft.Devices.Sensors;
+using System.Windows.Media;
 using System.IO;
 
 namespace ReadForBlind.Views
@@ -151,7 +152,8 @@ namespace ReadForBlind.Views
                 {
                     txtmsg.Text = "Please don't move the phone, let me click";
                 });
-                reader.readText("Please don't move the phone, let me click");
+                //reader.readText("Please don't move the phone, let me click");
+                await reader.readText("capturing");
                 //if (isStable)
                 //{
                     camera.Focus();
@@ -218,7 +220,11 @@ namespace ReadForBlind.Views
                 img.Source = wb;
                 
                 txtmsg.Text = "width = " + w.ToString() + " height = " + h.ToString();
-                setAutoFlash();
+                //setAutoFlash();
+                if (Utils.MyGlobals.mode == 0)
+                    stopFlash();
+                else if (Utils.MyGlobals.mode == 1)
+                    startFlash();
             });
             imageProcessing = new Thread(Process);
             imageProcessing.Start();
@@ -243,6 +249,8 @@ namespace ReadForBlind.Views
             {
                 txtmsg.Text = "Image captured";
                 PhoneApplicationService.Current.State["image"] = bmpimg;
+                reader.readText("Image captured");
+                reader.readText("wait a minute");
                 NavigationService.Navigate(new Uri("/Views/LoadingPage.xaml", UriKind.Relative));
             });
             
@@ -310,6 +318,7 @@ namespace ReadForBlind.Views
                 try
                 {
                     camera.FlashMode = FlashMode.On;
+                    Utils.MyGlobals.mode = 1;
                 }
                 catch (Exception ex) { }
             }
@@ -322,6 +331,7 @@ namespace ReadForBlind.Views
                 try
                 {
                     camera.FlashMode = FlashMode.Off;
+                    Utils.MyGlobals.mode = 0;
                 }
                 catch (Exception ex) { }
             }

@@ -11,6 +11,7 @@ using System.Windows.Media.Imaging;
 using Microsoft.Hawaii;
 using Microsoft.Hawaii.Ocr.Client;
 using System.Text;
+using System.Threading;
 using Microsoft.Xna.Framework.Media;
 
 namespace ReadForBlind.Views
@@ -44,6 +45,7 @@ namespace ReadForBlind.Views
             bg.ImageSource = bmp;
             utils = new Utils(bmp.PixelWidth, bmp.PixelHeight);
             StartOcr();     // Initiates the OCR process
+
         }
 
         // never called
@@ -51,18 +53,23 @@ namespace ReadForBlind.Views
         {
             // set the image that we got from camera to the bg of loadingpage
             bmp = new WriteableBitmap(bmp_raw);
-            bmp = bmp.Rotate(90);
+            //bmp = bmp.Rotate(90);
             bg.ImageSource = bmp;
 
             utils = new Utils(bmp.PixelWidth, bmp.PixelHeight);
 
             StartOcr();     // Initiates the OCR process
+            
+        }
+
+        private void Deskewd() {
+            utils.deskew(ref bmp);
         }
 
         private void StartOcr()
         {
-            reader.readText("Image has been captured.");
-            reader.readText("Please let me analyse it.");
+            //reader.readText("Image captured");
+            //reader.readText("wait a minute");
 
             //utils.deskew(ref bmp);
 
@@ -71,11 +78,11 @@ namespace ReadForBlind.Views
 
             utils.height = bmp.PixelHeight;
             utils.width = bmp.PixelWidth;
-            Rect r = utils.GetCropArea(bmp.Pixels);
-            if(r.Height !=0 && r.Width != 0)
-                bmp = bmp.Crop(r);
+            //Rect r = utils.GetCropArea(bmp.Pixels);
+            //if(r.Height !=0 && r.Width != 0)
+            //    bmp = bmp.Crop(r);
             bg.ImageSource = bmp;
-            bmp = bmp.Rotate(1);
+            //bmp = bmp.Rotate(1);
             byte[] photoBuffer = Utils.imageToByte(bmp);
             //ml.SavePictureToCameraRoll("filename.jpg", photoBuffer);
             OcrService.RecognizeImageAsync(Utils.HawaiiApplicationId, photoBuffer, (output) =>

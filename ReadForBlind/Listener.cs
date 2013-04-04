@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using Windows.Phone.Speech.Recognition;
+using System.IO.IsolatedStorage;
 
 namespace ReadForBlind
 {
@@ -25,7 +26,7 @@ namespace ReadForBlind
 
         private void loadGrammar()
         {
-            string[] actions = { "play", "pause", "reed", "stop", "close", "exit", "quit", "start", "repeat", "restart", "new photo", "new", "photo" };
+            string[] actions = { "play", "pause", "reed", "stop", "close", "exit", "quit", "start", "repeat", "restart", "new photo", "new", "photo" , "light", "dark", "flash"};
 
             listener.AudioProblemOccurred += Recognizer_AudioProblemOccurred;
             listener.Grammars.AddGrammarFromList("actions", actions);
@@ -41,7 +42,7 @@ namespace ReadForBlind
             playSound();
             SpeechRecognitionResult result = await listener.RecognizeAsync();
             if (result.TextConfidence >= SpeechRecognitionConfidence.Medium && result.Text.Length > 0)
-                return IsBuiltIn(result.Text);
+                return (await IsBuiltIn(result.Text));
             else
                 await reader.readText("Sorry but I didn't get you");
             return null;
@@ -69,12 +70,30 @@ namespace ReadForBlind
             }
         }
 
-        private String IsBuiltIn(String txt)
+        private async Task<String> IsBuiltIn(String txt)
         {
             txt = txt.ToLower();
             if (txt.Contains("quit") || txt.Contains("exit") || txt.Contains("close"))
             {
+                await reader.readText("closing");
                 Application.Current.Terminate();
+            } else if(txt.Contains("flash")){
+                if (Utils.MyGlobals.mode == 0)
+                {
+                    reader.readText("Flash off");
+                }
+                else {
+                    reader.readText("Flash On");
+                }
+                return null;
+            }
+            else if (txt.Contains("light")) {
+                Utils.MyGlobals.mode = 1;
+                return null;
+            }
+            else if (txt.Contains("dark")) {
+                Utils.MyGlobals.mode = 0;
+                return null;
             }
             return txt;
         }

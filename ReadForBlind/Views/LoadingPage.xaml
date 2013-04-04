@@ -16,7 +16,7 @@
     <!--LayoutRoot is the root grid where all page content is placed-->
     <Grid x:Name="LayoutRoot">
         <Grid.Background>
-            <ImageBrush x:Name="bg" Stretch="Fill" />
+            <ImageBrush x:Name="bg" Stretch="None" />
         </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

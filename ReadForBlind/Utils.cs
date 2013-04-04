@@ -337,7 +337,7 @@ namespace ReadForBlind
         }
 
         public Rect GetCropArea(int[] bmp) { 
-            int cutoff = 80;
+            int cutoff = 90;
             double l = GetLeft(bmp,cutoff);
             double r = GetRight(bmp, cutoff);
             double b = GetBottom(bmp, cutoff);
@@ -820,5 +820,11 @@ namespace ReadForBlind
             c.B = (byte)(color & 0x000000ff);
             return c;
         }
+        public static class MyGlobals
+        {
+            public static int mode = 0;     // by default flash is off
+        }
     }
+
+    
 }
