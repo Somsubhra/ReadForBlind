@@ -30,5 +30,9 @@ namespace ReadForBlind
         public void Dispose() {
             reader.Dispose();
         }
+
+        public void CancelAll() {
+            reader.CancelAll();
+        }
     }
 }

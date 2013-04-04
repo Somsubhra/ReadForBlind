@@ -361,7 +361,7 @@ namespace ReadForBlind
                 if (inten > cutoff)
                     return i;
             }
-            return -1;
+            return 0;
         }
 
         //public int GetRight(int[] bmp, int cutoff) 
@@ -397,7 +397,7 @@ namespace ReadForBlind
                 if (inten > cutoff)
                     return (i);
             }
-            return -1;
+            return 0;
         }
 
         public int GetTop(int[] bmp, int cutoff)
@@ -414,7 +414,7 @@ namespace ReadForBlind
                 if (inten > cutoff)
                     return i;
             }
-            return -1;
+            return 0;
         }
 
         public int GetBottom(int[] bmp, int cutoff)
@@ -431,7 +431,7 @@ namespace ReadForBlind
                 if (inten > cutoff)
                     return (this.height - i) ;
             }
-            return -1;
+            return 0;
         }
 
         private int GetPixel(int[] pixels, int i, int j)

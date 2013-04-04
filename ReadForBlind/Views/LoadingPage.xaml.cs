@@ -72,7 +72,8 @@ namespace ReadForBlind.Views
             utils.height = bmp.PixelHeight;
             utils.width = bmp.PixelWidth;
             Rect r = utils.GetCropArea(bmp.Pixels);
-            bmp = bmp.Crop(r);
+            if(r.Height !=0 && r.Width != 0)
+                bmp = bmp.Crop(r);
             bg.ImageSource = bmp;
             bmp = bmp.Rotate(1);
             byte[] photoBuffer = Utils.imageToByte(bmp);

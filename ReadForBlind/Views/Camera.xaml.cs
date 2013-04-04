@@ -32,23 +32,10 @@ namespace ReadForBlind.Views
         private static Accelerometer acc;
         private double oldx, oldy, oldz;
         private static BitmapImage bmpimg;
-        private DispatcherTimer dt;
 
         public Camera()
         {
             InitializeComponent();
-            reader = new Reader();
-            listener = new Listener();
-            acc = new Accelerometer();
-            try
-            {
-                acc.Start();
-                acc.CurrentValueChanged += acc_CurrentValueChanged;
-                oldy = acc.CurrentValue.Acceleration.Y;
-                oldx = acc.CurrentValue.Acceleration.X;
-                oldz = acc.CurrentValue.Acceleration.Z;
-            }
-            catch (AccelerometerFailedException) { }
         }
 
         private async void acc_CurrentValueChanged(object sender, SensorReadingEventArgs<AccelerometerReading> e)
@@ -184,6 +171,18 @@ namespace ReadForBlind.Views
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
+            reader = new Reader();
+            listener = new Listener();
+            acc = new Accelerometer();
+            try
+            {
+                acc.Start();
+                acc.CurrentValueChanged += acc_CurrentValueChanged;
+                oldy = acc.CurrentValue.Acceleration.Y;
+                oldx = acc.CurrentValue.Acceleration.X;
+                oldz = acc.CurrentValue.Acceleration.Z;
+            }
+            catch (AccelerometerFailedException) { }
             if ((PhotoCamera.IsCameraTypeSupported(CameraType.Primary) == true))
             {
                 camera = new PhotoCamera(CameraType.Primary);
@@ -209,20 +208,17 @@ namespace ReadForBlind.Views
         {
             Dispatcher.BeginInvoke(delegate()
             {
-                dt = new DispatcherTimer();
-                dt.Interval = new TimeSpan(0, 0, 2);
-                dt.Tick += dt_Tick;
-                
                 pumpARGBFrames = true;
                 int w = (int)camera.PreviewResolution.Width;
                 int h = (int)camera.PreviewResolution.Height;
+                img.Source = new WriteableBitmap(w, h);
                 wb = new WriteableBitmap(w, h);
                 utils = new Utils(w, h);
+                
                 img.Source = wb;
                 
                 txtmsg.Text = "width = " + w.ToString() + " height = " + h.ToString();
                 setAutoFlash();
-                //dt.Start();
             });
             imageProcessing = new Thread(Process);
             imageProcessing.Start();
@@ -299,6 +295,7 @@ namespace ReadForBlind.Views
                 acc.Stop();
                 imageProcessing.Abort();
                 reader = null;
+                
                 camera.Dispose();
                 camera.Initialized -= cameraInitialized;
                 camera.CaptureCompleted -= captureCompleted;

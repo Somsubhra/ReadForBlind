@@ -39,7 +39,7 @@ namespace ReadForBlind.Views
 
         private async void startConv()
         {
-            await reader.readText("May I reed the text for you? Tap the screen for yes");
+            reader.readText("May I reed the text for you? Tap the screen for yes");
         }
 
         // this method should listen for the user input: play, pause, restart, etc..
@@ -61,6 +61,7 @@ namespace ReadForBlind.Views
 
         private void PlayText()
         {
+            reader.CancelAll();
             synth = new SpeechSynthesizer();
             synth.BookmarkReached += synth_BookmarkReached;
             synth.SpeakSsmlAsync(makeSSML());
@@ -111,6 +112,17 @@ namespace ReadForBlind.Views
             }
         }
 
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            try
+            {
+                synth.Dispose();
+            }
+            catch (Exception)
+            {}
+                
+        }
+
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             NavigationService.RemoveBackEntry();
@@ -137,8 +149,9 @@ namespace ReadForBlind.Views
                     PauseText();
                 }
                 else if (result.Contains("new") || result.Contains("photo"))
-                {
+                { 
                     NavigationService.GoBack();
+                    //NavigationService.Navigate(new Uri("/Camera.xaml", UriKind.Relative));
                 }
                 else if (result.Contains("repeat") || result.Contains("restart"))
                 {

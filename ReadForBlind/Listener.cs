@@ -25,7 +25,7 @@ namespace ReadForBlind
 
         private void loadGrammar()
         {
-            string[] actions = { "play", "pause", "reed", "stop", "close", "exit", "quit", "start", "repeat", "restart" };
+            string[] actions = { "play", "pause", "reed", "stop", "close", "exit", "quit", "start", "repeat", "restart", "new photo", "new", "photo" };
 
             listener.AudioProblemOccurred += Recognizer_AudioProblemOccurred;
             listener.Grammars.AddGrammarFromList("actions", actions);
