@@ -12,11 +12,17 @@ using System.IO.IsolatedStorage;
 
 namespace ReadForBlind
 {
+    /// <summary>
+    /// The speech recognizer wrapper class
+    /// </summary>
     class Listener
     {
         private SpeechRecognizer listener;
         private Reader reader;
 
+        /// <summary>
+        /// Constructor for listener
+        /// </summary>
         public Listener()
         {
             listener = new SpeechRecognizer();
@@ -24,6 +30,9 @@ namespace ReadForBlind
             loadGrammar();
         }
 
+        /// <summary>
+        /// Loads the grammar to the listener
+        /// </summary>
         private void loadGrammar()
         {
             string[] actions = { "play", "pause", "reed", "stop", "close", "exit", "quit", "start", "repeat", "restart", "new photo", "new", "photo" , "light", "dark", "flash"};
@@ -32,11 +41,22 @@ namespace ReadForBlind
             listener.Grammars.AddGrammarFromList("actions", actions);
         }
 
+
+        /// <summary>
+        /// Event handler when a audio problem occurs in the speech recognition
+        /// </summary>
+        /// <param name="sender">The sender of the event</param>
+        /// <param name="args">The arguments passed to the event handler when a audio problem occurs</param>
         private async void Recognizer_AudioProblemOccurred(SpeechRecognizer sender, SpeechAudioProblemOccurredEventArgs args)
         {
             await reader.readText("Please speak clearly.");
         }
 
+
+        /// <summary>
+        /// Recognizes the speech spoken 
+        /// </summary>
+        /// <returns>The task of recognizing the speech</returns>
         public async Task<String> Listen()
         {
             playSound();
@@ -48,6 +68,9 @@ namespace ReadForBlind
             return null;
         }
 
+        /// <summary>
+        /// Notify when the speech recognition turns on
+        /// </summary>
         public void playSound()
         {
             Stream stream = TitleContainer.OpenStream("Assets/notify.wav");
@@ -59,6 +82,9 @@ namespace ReadForBlind
             }
         }
 
+        /// <summary>
+        /// Notifies when the speech recognition turns off
+        /// </summary>
         public void PlaySpeechOff()
         {
             Stream stream = TitleContainer.OpenStream("Assets/SpeechOff.wav");
@@ -70,6 +96,11 @@ namespace ReadForBlind
             }
         }
 
+        /// <summary>
+        /// Checks whether the word spoken is a command which is built in
+        /// </summary>
+        /// <param name="txt">The word recognized</param>
+        /// <returns>The task whether the word is built in</returns>
         private async Task<String> IsBuiltIn(String txt)
         {
             txt = txt.ToLower();
@@ -96,6 +127,10 @@ namespace ReadForBlind
             return txt;
         }
 
+        /// <summary>
+        /// Notifies about the failed conversion
+        /// </summary>
+        /// <returns>The task of notifying the failed conversion</returns>
         public async Task<String> ConversionFailedConfirmation()
         {
             playSound();
