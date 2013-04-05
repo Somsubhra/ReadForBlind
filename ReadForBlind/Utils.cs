@@ -13,6 +13,9 @@ using System.Windows;
 
 namespace ReadForBlind
 {
+    /// <summary>
+    /// The utility class for image processing
+    /// </summary>
     public class Utils
     {
         private int offset = 120, limit;
@@ -23,6 +26,11 @@ namespace ReadForBlind
         /// </summary>
         public const string HawaiiApplicationId = "50be8f73-9a12-457c-af36-a982afe9756c";
 
+        /// <summary>
+        /// Converts an image to bytes
+        /// </summary>
+        /// <param name="bmp">The image</param>
+        /// <returns>The bytes obtained from the image</returns>
         public static byte[] imageToByte(WriteableBitmap bmp)
         {
             using (MemoryStream ms = new MemoryStream())
@@ -39,6 +47,10 @@ namespace ReadForBlind
         }
 
         // call by reference
+        /// <summary>
+        /// Resizes the image
+        /// </summary>
+        /// <param name="bmp">The image to be resized</param>
         public static void resizeImage(ref WriteableBitmap bmp)
         {
             // TODO: memory management 
@@ -69,6 +81,11 @@ namespace ReadForBlind
             bmp.SetSource(ms);
         }
 
+        /// <summary>
+        /// The construtor for the utils
+        /// </summary>
+        /// <param name="width">Width of the image</param>
+        /// <param name="height">Height of the image</param>
         public Utils(int width, int height)
         {
             this.width = width;
@@ -76,6 +93,11 @@ namespace ReadForBlind
             this.offset = 80;
         }
 
+        /// <summary>
+        /// Turns an image to grayscale
+        /// </summary>
+        /// <param name="pixels">The pixels of the image</param>
+        /// <returns>The grayscale pixels of the image</returns>
         public int[] GrayScale(int[] pixels)
         {
             for (int i = 0; i < pixels.Length; i++)
@@ -85,6 +107,13 @@ namespace ReadForBlind
             return pixels;
         }
 
+
+        /// <summary>
+        /// Binarizes a given image
+        /// </summary>
+        /// <param name="pixels">The pixels of the image</param>
+        /// <param name="threshold">The threshold to determine the binarization</param>
+        /// <returns>Tye pixels of the binarized image</returns>
         public int[] Binarize(int[] pixels, int threshold)
         {
 
@@ -105,6 +134,11 @@ namespace ReadForBlind
             return pixels;
         }
 
+        /// <summary>
+        /// Make a bitwise not of the image
+        /// </summary>
+        /// <param name="pixels">The pixels of the image</param>
+        /// <returns>The pixels of the bitwise not'ed image</returns>
         public int[] Bitwise_not(int[] pixels)
         {
             for (int i = 0; i < pixels.Length; i++)
@@ -121,6 +155,11 @@ namespace ReadForBlind
             return pixels;
         }
 
+        /// <summary>
+        /// Turn color to corresponding grayscale
+        /// </summary>
+        /// <param name="color">The color of the image</param>
+        /// <returns>The grayscale color</returns>
         private int ColorToGray(int color)
         {
             int gray = 0;
@@ -151,6 +190,11 @@ namespace ReadForBlind
             Decreasing
         };
 
+        /// <summary>
+        /// Get threshold for differentating between objects
+        /// </summary>
+        /// <param name="pixels">The pixels of the image</param>
+        /// <returns>The threshold value</returns>
         public int GetThreshold(int[] pixels)
         {
             int[] histo = new int[256];
@@ -199,6 +243,11 @@ namespace ReadForBlind
             return th;
         }
 
+        /// <summary>
+        /// Checks for the boundaries of the image
+        /// </summary>
+        /// <param name="pixels">The pixels of the image</param>
+        /// <returns>The boundaries of the image</returns>
         public Boundaries CheckBoundaries(int[] pixels)
         {
             // check left
@@ -213,6 +262,11 @@ namespace ReadForBlind
             return b;
         }
 
+        /// <summary>
+        /// Gets average intensity of the image
+        /// </summary>
+        /// <param name="pixels">The pixels of the image</param>
+        /// <returns>The average intensity of the image</returns>
         private int GetIntensity(int[] pixels)
         {
             int intensity = 0;
@@ -228,6 +282,12 @@ namespace ReadForBlind
             return (intensity / (this.width * this.height));
         }
 
+        /// <summary>
+        /// Checks for the left boundary of the image
+        /// </summary>
+        /// <param name="bmp">The image</param>
+        /// <param name="bf">The boundary proportion</param>
+        /// <returns>Whether the left boundary is still not present</returns>
         private bool CheckLeft(int[] bmp, double bf)
         {
             int intensity = 0;
@@ -267,6 +327,12 @@ namespace ReadForBlind
             }
         }
 
+        /// <summary>
+        /// Checks for the right boundary of the image
+        /// </summary>
+        /// <param name="bmp">The image</param>
+        /// <param name="bf">The boundary proportion</param>
+        /// <returns>Whether the right boundary is still not present</returns>
         private bool CheckRight(int[] bmp, double bf)
         {
             int intensity = 0;
@@ -306,6 +372,12 @@ namespace ReadForBlind
             }
         }
 
+        /// <summary>
+        /// Checks for the top boundary of the image
+        /// </summary>
+        /// <param name="bmp">The image</param>
+        /// <param name="bf">The boundary proportion</param>
+        /// <returns>Whether the top boundary is still not reached</returns>
         private bool CheckTop(int[] bmp, double bf)
         {
             int intensity = 0;
@@ -321,6 +393,12 @@ namespace ReadForBlind
             return true;
         }
 
+        /// <summary>
+        /// Checks for the bottom boundary of the image
+        /// </summary>
+        /// <param name="bmp">The image</param>
+        /// <param name="bf">The boundar proportion</param>
+        /// <returns>Whether the bottom boundary is still not reached</returns>
         private bool CheckBottom(int[] bmp, double bf)
         {
             int intensity = 0;
@@ -336,6 +414,11 @@ namespace ReadForBlind
             return true;
         }
 
+        /// <summary>
+        /// Get the portion of the page in the image which has to be cropped 
+        /// </summary>
+        /// <param name="bmp">The image</param>
+        /// <returns>The cropped area rectangle</returns>
         public Rect GetCropArea(int[] bmp) { 
             int cutoff = 90;
             double l = GetLeft(bmp,cutoff);
@@ -346,6 +429,12 @@ namespace ReadForBlind
             return rec;
         }
 
+        /// <summary>
+        /// Gets the left coordinate of the page
+        /// </summary>
+        /// <param name="bmp">The image</param>
+        /// <param name="cutoff">The cutoff for distinguishing objects</param>
+        /// <returns>The left coordinate of the page</returns>
         public int GetLeft(int[] bmp, int cutoff) 
         {
             for (int i = 0; i < this.width; i++)
@@ -382,6 +471,12 @@ namespace ReadForBlind
         //    return -1;
         //}
 
+        /// <summary>
+        /// Gets the right coordinate of the page
+        /// </summary>
+        /// <param name="bmp">The image</param>
+        /// <param name="cutoff">The cutoff for distinguishing the objects</param>
+        /// <returns>The right coordinate of the page</returns>
         public int GetRight(int[] bmp, int cutoff)
         {
             for (int i = this.width; i > 0; i--)
@@ -400,6 +495,12 @@ namespace ReadForBlind
             return 0;
         }
 
+        /// <summary>
+        /// Gets the top coordinate of the page
+        /// </summary>
+        /// <param name="bmp">The image</param>
+        /// <param name="cutoff">The cutoff for distinguishing the objects</param>
+        /// <returns>The top coordinate of the page</returns>
         public int GetTop(int[] bmp, int cutoff)
         {
             for (int i = 0; i < this.height; i++)
@@ -417,6 +518,12 @@ namespace ReadForBlind
             return 0;
         }
 
+        /// <summary>
+        /// Gets the bottom coordinate of the page
+        /// </summary>
+        /// <param name="bmp">The image</param>
+        /// <param name="cutoff">The cutoff for distinguishing the objects</param>
+        /// <returns>The bottom coordinate of the page</returns>
         public int GetBottom(int[] bmp, int cutoff)
         {
             for (int i = 0; i < this.height; i++)
@@ -434,11 +541,21 @@ namespace ReadForBlind
             return 0;
         }
 
+        /// <summary>
+        /// Get the pixel from the image
+        /// </summary>
+        /// <param name="pixels">The 1d array of pixels</param>
+        /// <param name="i">The column number in image</param>
+        /// <param name="j">The row number in image</param>
+        /// <returns>The pixel</returns>
         private int GetPixel(int[] pixels, int i, int j)
         {
             return pixels[(this.width * i) + j];
         }
 
+        /// <summary>
+        /// The boundaries class
+        /// </summary>
         public class Boundaries
         {
             public bool Left { get; set; }
@@ -447,6 +564,11 @@ namespace ReadForBlind
             public bool Bottom { get; set; }
         }
 
+        /// <summary>
+        /// 
+        /// Erodes the image</summary>
+        /// <param name="rp">The pixels of the image</param>
+        /// <returns>The pixels of the eroded image</returns>
         public int[] Erode(int[] rp)
         {
             int CompareEmptyColor = 0;
@@ -614,6 +736,10 @@ namespace ReadForBlind
             return rp;
         }
 
+        /// <summary>
+        /// Deskew the image
+        /// </summary>
+        /// <param name="bmp">The image</param>
         public void deskew(ref WriteableBitmap bmp)
         {
             Deskew sk = new Deskew(bmp);
@@ -621,6 +747,9 @@ namespace ReadForBlind
             bmp = WriteableBitmapExtensions.RotateFree(bmp, skewAngle);
         }
 
+        /// <summary>
+        /// Class for deskewing the image
+        /// </summary>
         public class Deskew
         {
             // Representation of a line in the image.
@@ -651,6 +780,10 @@ namespace ReadForBlind
 
             int[] cHMatrix;
             // Calculate the skew angle of the image cBmp.
+            /// <summary>
+            /// Gets the skew angle
+            /// </summary>
+            /// <returns></returns>
             public double GetSkewAngle()
             {
                 Deskew.HougLine[] hl = null;
@@ -672,6 +805,11 @@ namespace ReadForBlind
             }
 
             // Calculate the Count lines in the image with most points.
+            /// <summary>
+            /// Calculate the Count lines in the image with most points
+            /// </summary>
+            /// <param name="Count">count</param>
+            /// <returns>The hough line</returns>
             private HougLine[] GetTop(int Count)
             {
                 HougLine[] hl = null;
@@ -711,11 +849,19 @@ namespace ReadForBlind
                 }
                 return hl;
             }
+
+            /// <summary>
+            /// Constructor of Deskew class
+            /// </summary>
+            /// <param name="bmp">The image</param>
             public Deskew(WriteableBitmap bmp)
             {
                 cBmp = bmp;
             }
             // Hough Transforamtion:
+            /// <summary>
+            /// Calculates the Hough Transform
+            /// </summary>
             private void Calc()
             {
                 int x = 0;
@@ -740,6 +886,11 @@ namespace ReadForBlind
                 }
             }
             // Calculate all lines through the point (x,y).
+            /// <summary>
+            /// Calculate all lines through the point (x,y)
+            /// </summary>
+            /// <param name="x">coordinate x</param>
+            /// <param name="y">coordinate y</param>
             private void Calc(int x, int y)
             {
                 int alpha = 0;
@@ -762,6 +913,7 @@ namespace ReadForBlind
                     }
                 }
             }
+
             private int CalcDIndex(double d)
             {
                 return Convert.ToInt32(d - cDMin);
@@ -801,6 +953,11 @@ namespace ReadForBlind
             }
         }
 
+        /// <summary>
+        /// Encode the color
+        /// </summary>
+        /// <param name="c">Color</param>
+        /// <returns>the encoded color</returns>
         private int EncodeColor(Color c)
         {
             int color = 0;
@@ -811,6 +968,11 @@ namespace ReadForBlind
             return color;
         }
 
+        /// <summary>
+        /// Decodes the color
+        /// </summary>
+        /// <param name="color">Color</param>
+        /// <returns>The decoded color</returns>
         private Color DecodeColor(int color)
         {
             Color c = new Color();
