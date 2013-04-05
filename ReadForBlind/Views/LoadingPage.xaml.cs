@@ -16,6 +16,9 @@ using Microsoft.Xna.Framework.Media;
 
 namespace ReadForBlind.Views
 {
+    /// <summary>
+    /// Class for the loading page when OCR is performed
+    /// </summary>
     public partial class LoadingPage : PhoneApplicationPage
     {
         private BitmapImage bmp_raw;
@@ -25,6 +28,10 @@ namespace ReadForBlind.Views
         private Utils utils;
         private MediaLibrary ml;
 
+
+        /// <summary>
+        /// Constructor for the Loading page
+        /// </summary>
         public LoadingPage()
         {
             InitializeComponent();
@@ -49,6 +56,11 @@ namespace ReadForBlind.Views
         }
 
         // never called
+        /// <summary>
+        /// Event handler when the raw image is opened
+        /// </summary>
+        /// <param name="sender">The sender of the event</param>
+        /// <param name="e">The arguments passed to the event handler when the raw image is opened</param>
         private void bmp_raw_ImageOpened(object sender, RoutedEventArgs e)
         {
             // set the image that we got from camera to the bg of loadingpage
@@ -62,10 +74,17 @@ namespace ReadForBlind.Views
             
         }
 
+        /// <summary>
+        /// Deskews the image
+        /// </summary>
         private void Deskewd() {
             utils.deskew(ref bmp);
         }
 
+
+        /// <summary>
+        /// Starts the OCR of the image
+        /// </summary>
         private void StartOcr()
         {
             //reader.readText("Image captured");
@@ -91,6 +110,11 @@ namespace ReadForBlind.Views
             });
         }
 
+
+        /// <summary>
+        /// Event handler when the OCR service is completed
+        /// </summary>
+        /// <param name="result">The result of the OCR service</param>
         private async void OnOcrComplete(OcrServiceResult result)
         {
             if (result.Status == Status.Success)
