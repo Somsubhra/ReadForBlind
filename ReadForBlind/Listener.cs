@@ -89,11 +89,9 @@ namespace ReadForBlind
             }
             else if (txt.Contains("light")) {
                 Utils.MyGlobals.mode = 1;
-                return null;
             }
             else if (txt.Contains("dark")) {
                 Utils.MyGlobals.mode = 0;
-                return null;
             }
             return txt;
         }

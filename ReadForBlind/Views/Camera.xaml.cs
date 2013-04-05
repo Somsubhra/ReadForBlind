@@ -36,7 +36,7 @@ namespace ReadForBlind.Views
 
         public Camera()
         {
-            InitializeComponent();
+            
         }
 
         private async void acc_CurrentValueChanged(object sender, SensorReadingEventArgs<AccelerometerReading> e)
@@ -173,6 +173,7 @@ namespace ReadForBlind.Views
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
+            InitializeComponent();
             reader = new Reader();
             listener = new Listener();
             acc = new Accelerometer();
@@ -365,6 +366,12 @@ namespace ReadForBlind.Views
                 else if (result.Contains("new") || result.Contains("photo"))
                 {
                     reader.readText("You are currently on new photo page");
+                }
+                else if (result.Contains("light")) {
+                    startFlash();
+                }
+                else if (result.Contains("dark")) {
+                    stopFlash();
                 }
             }
         }

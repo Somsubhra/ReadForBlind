@@ -64,7 +64,16 @@ namespace ReadForBlind.Views
             reader.CancelAll();
             synth = new SpeechSynthesizer();
             synth.BookmarkReached += synth_BookmarkReached;
-            synth.SpeakSsmlAsync(makeSSML());
+            try
+            {
+                synth.SpeakSsmlAsync(makeSSML());
+            }
+            catch (System.FormatException e)
+            {
+                reader.readText("this text cannot be read");
+                return;
+            }
+            
             playing = true;
         }
 

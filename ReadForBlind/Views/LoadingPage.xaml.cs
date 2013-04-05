@@ -97,6 +97,12 @@ namespace ReadForBlind.Views
             {
                 int wordCount = 0;
                 List<String> text = new List<string>();
+                if (result.OcrResult.OcrTexts.Count == 1 && result.OcrResult.OcrTexts[0].Text == "") { 
+                    String mode = (Utils.MyGlobals.mode == 1)?"dark":"light";
+                    await reader.readText("No text detected, try changing to " + mode + " mode");
+                    await reader.readText("Returning to capture screen");
+                    NavigationService.GoBack();
+                }
                 foreach (OcrText item in result.OcrResult.OcrTexts)
                 {
                     wordCount += item.Words.Count;
